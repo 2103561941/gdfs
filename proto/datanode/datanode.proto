@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "datanode/server";
+
+service DataNodeSever {
+}
+
+message Requset {
+    string LocalFilePath = 1;
+    string RemoteFilePath = 2; 
+    bytes Databytes = 3;  // file data
+}
+
+message Response {
+    int64 ack = 1;  // result status
+    string msg = 2; // result details
+    bytes Databytes = 3;  // file data
+}

@@ -1,0 +1,15 @@
+syntax = "proto3";
+option go_package = "namenode/server";
+
+service NameNodeServer {
+}
+
+message Requset {
+    string LocalFilePath = 1;
+    string RemoteFilePath = 2; 
+}
+
+message Response {
+    int64 ack = 1;  // result status
+    string msg = 2; // result details
+}

@@ -17,11 +17,13 @@ cmd.gendocs:
 
 
 # gen xx.pb.go file from xx.proto file
-# gen all protobuf to golang file
-.PYONY: gen.proto.all
-gen.proto.all: proto/datanode/datanode.proto proto/namenode/namenode.proto
-
-
-proto=proto
-.PYONY: gen.proto 
-gen.proto: proto/${proto}/proto
+.PYONY: gen.proto
+gen.proto:
+	@-echo build proto...
+	@protoc --go_out=. --go_opt=paths=source_relative \
+	 --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+	 ./proto/datanode/datanode.proto
+	@protoc --go_out=. --go_opt=paths=source_relative \
+	 --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+	 ./proto/namenode/namenode.proto
+	@-echo success!

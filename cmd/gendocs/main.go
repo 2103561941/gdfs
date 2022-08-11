@@ -1,4 +1,4 @@
-// 自动生成 cobra 的命令行文档文件
+// create client command markdown docfiles automatically.  
 
 package main
 
@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
-	filepath := "api/cmd/"
+	// relative file path, refer to the loaction of excutable file.
+	filepath := "/docs/api/cmd/"
 	log.Println(cmd.GenDocs(filepath))
 }

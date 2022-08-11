@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 }
 
 
-// 开启命令行服务
+// Register command server  
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -25,7 +25,7 @@ func Execute() {
 	}
 }
 
-// 自动生成markdown使用文档
+
 func GenDocs(filepath string) error {
 	return doc.GenMarkdownTree(rootCmd, filepath)
 }
