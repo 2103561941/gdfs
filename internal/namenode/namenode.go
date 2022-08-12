@@ -1,0 +1,6 @@
+package namenode
+
+
+func Run() {
+	
+}
