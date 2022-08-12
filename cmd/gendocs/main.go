@@ -1,10 +1,11 @@
-// create client command markdown docfiles automatically.  
+// create client command markdown docfiles automatically.
 
 package main
 
 import (
-	"gdfs/internal/client/cmd"
 	"log"
+
+	"github.com/cyb0225/gdfs/internal/client/cmd"
 )
 
 func main() {

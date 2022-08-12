@@ -1,4 +1,4 @@
-module gdfs
+module github.com/cyb0225/gdfs
 
 go 1.18
 
