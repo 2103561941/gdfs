@@ -2,45 +2,29 @@ syntax = "proto3";
 option go_package = "namenode/pb";
 
 service NameNode {
-    rpc Put(Request)returns(Response){}
-    rpc Get(Request)returns(Response){}
-    rpc Delete(Request)returns(Response){}
-    rpc Mkdir(Request)returns(Response){}
-    rpc Rename(RenameRequest)returns(Response){}
-    rpc List(Request)returns(Response){}
+    rpc Get(GetRequest)returns(GetResponse){}
 }
 
-message Request {
-    string localFilePath = 1;
-    string remoteFilePath = 2; 
+message GetRequest {
+    string remoteFilePath = 1;
 }
 
-message RenameRequest {
-    string renameSrcPath = 1;
-    string renameDestPath = 2;
+message GetResponse {
+    repeated Chunk chunks = 1;
 }
 
-
-message Response {
-    message Result{
-        int64 ack = 1;  // result status
-        string msg = 2; // result details
-    }
-    Result result = 1;
-
-    message DataNodeInfo {
-        string addr = 1;  // ip:port 
-    }
-    repeated DataNodeInfo dataNodeInfo = 2;
-
-    
-    message FileMeta {
-        string name = 1;
-        string path = 2;
-        uint64 size = 3;
-    }
-    repeated FileMeta fileMeta = 3;
+// file chunks(a large file can be split to lots of smaller files)
+message Chunk {
+    repeated Backup backups = 1;
 }
 
+// file backups (a file will be stored in different datanodes)
+message Backup {
+    string fileKey = 1; // file's name in datanode.
+    repeated DatanodeInfo datanodes = 2;
+}
 
-
+// file info and related datanode
+message DatanodeInfo {
+    string addr = 1;
+}
