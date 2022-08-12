@@ -1,6 +1,4 @@
 ###  =================================== Env  ==================================================
-bin = bin #binary file directory
-cmd = cmd #entry file direcotory
 
 
 ###  =================================== Command  ==================================================
@@ -29,22 +27,23 @@ gen.proto:
 
 ## start rpc server
 .PYONY: run.client
-run.client: bin/client
+run.client: client.o
 	@-echo run client...
-	@./bin/client
+	@./client.o
 
 
 port = 50051
 .PYONY: run.namenode
-run.namenode: bin/namenode
+run.namenode: namenode.o
 	@-echo run namenode...
-	@./bin/namenode --port=${port}
+# @./namenode --port=${port}
+	@./namenode.o
 
 
 .PYONY: run.datanode
-run.datanode: bin/datanode 
+run.datanode: datanode.o
 	@-echo run datanode...
-	@./bin/datanode
+	@./datanode.o
 
 
 
@@ -52,26 +51,28 @@ run.datanode: bin/datanode
 ###  =================================== Build File ==================================================
 
 # create client binary file
-bin/client: cmd/client/main.go
+## tips: I store binary file in project root directory instead of in ./bin directory
+## 		 because, I need to use the config file in the same relative position as usual.
+client.o: cmd/client/main.go
 	@-echo build client...
-	@go build -o bin/client cmd/client/main.go
+	@go build -o client.o cmd/client/main.go
 	@-echo success!
 
 # create namenode binary file
-bin/namenode: cmd/namenode/main.go
+namenode.o: cmd/namenode/main.go
 	@-echo build namenode...
-	@go build -o bin/namenode cmd/namenode/main.go
+	@go build -o namenode.o cmd/namenode/main.go
 	@-echo success!
 
 # create datandoe binary file
-bin/datanode: cmd/datanode/main.go
+datanode.o: cmd/datanode/main.go
 	@-echo build datanode...
-	@go build -o bin/datanode cmd/datanode/main.go
+	@go build -o datanode.o cmd/datanode/main.go
 	@-echo success!
 
 
 .PYONY: clean
 clean:
 	@-echo start clean...
-	@rm -rf bin/*
+	@rm -rf *.o
 	@-echo clean over!

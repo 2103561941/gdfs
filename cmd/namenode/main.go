@@ -1,14 +1,10 @@
 package main
 
 import (
-	"fmt"
-)
-
-var (
-	
+	"github.com/cyb0225/gdfs/internal/namenode"
 )
 
 func main() {
-	fmt.Println("I am namenode")
+	namenode.Run()
 	return
 }
