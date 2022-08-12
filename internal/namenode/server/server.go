@@ -4,6 +4,8 @@ import (
 	"log"
 	"net"
 
+	"github.com/cyb0225/gdfs/internal/namenode/cache"
+	"github.com/cyb0225/gdfs/internal/namenode/tree"
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 	"google.golang.org/grpc"
 )
@@ -12,6 +14,8 @@ var _ pb.NameNodeServer = (*Server)(nil)
 
 type Server struct {
 	pb.UnimplementedNameNodeServer
+	tree *tree.Tree
+	cache *cache.Cache
 }
 
 // start rpc server
