@@ -1,21 +1,46 @@
 syntax = "proto3";
-option go_package = "namenode/server";
+option go_package = "namenode/pb";
 
-service NameNodeServer {
+service NameNode {
+    rpc Put(Request)returns(Response){}
+    rpc Get(Request)returns(Response){}
+    rpc Delete(Request)returns(Response){}
+    rpc Mkdir(Request)returns(Response){}
+    rpc Rename(RenameRequest)returns(Response){}
+    rpc List(Request)returns(Response){}
 }
 
-message Requset {
-    string LocalFilePath = 1;
-    string RemoteFilePath = 2; 
+message Request {
+    string localFilePath = 1;
+    string remoteFilePath = 2; 
 }
+
+message RenameRequest {
+    string renameSrcPath = 1;
+    string renameDestPath = 2;
+}
+
 
 message Response {
-    int64 ack = 1;  // result status
-    string msg = 2; // result details
+    message Result{
+        int64 ack = 1;  // result status
+        string msg = 2; // result details
+    }
+    Result result = 1;
+
     message DataNodeInfo {
         string addr = 1;  // ip:port 
-        
-
     }
-    repeated DataNodeInfo dataNodeInfo = 3;
+    repeated DataNodeInfo dataNodeInfo = 2;
+
+    
+    message FileMeta {
+        string name = 1;
+        string path = 2;
+        uint64 size = 3;
+    }
+    repeated FileMeta fileMeta = 3;
 }
+
+
+

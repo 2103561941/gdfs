@@ -1,13 +1,13 @@
 syntax = "proto3";
-option go_package = "datanode/server";
+option go_package = "datanode/pb";
 
-service DataNodeSever {
+service DataNode {
 }
 
 message Requset {
-    string LocalFilePath = 1;
-    string RemoteFilePath = 2; 
-    bytes Databytes = 3;  // file data
+    string localFilePath = 1;
+    string remoteFilePath = 2; 
+    bytes databytes = 3;  // file data
 }
 
 message Response {
