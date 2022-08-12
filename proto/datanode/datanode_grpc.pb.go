@@ -4,7 +4,7 @@
 // - protoc             v3.21.3
 // source: proto/datanode/datanode.proto
 
-package server
+package pb
 
 import (
 	grpc "google.golang.org/grpc"
@@ -15,50 +15,50 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// DataNodeSeverClient is the client API for DataNodeSever service.
+// DataNodeClient is the client API for DataNode service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type DataNodeSeverClient interface {
+type DataNodeClient interface {
 }
 
-type dataNodeSeverClient struct {
+type dataNodeClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewDataNodeSeverClient(cc grpc.ClientConnInterface) DataNodeSeverClient {
-	return &dataNodeSeverClient{cc}
+func NewDataNodeClient(cc grpc.ClientConnInterface) DataNodeClient {
+	return &dataNodeClient{cc}
 }
 
-// DataNodeSeverServer is the server API for DataNodeSever service.
-// All implementations must embed UnimplementedDataNodeSeverServer
+// DataNodeServer is the server API for DataNode service.
+// All implementations must embed UnimplementedDataNodeServer
 // for forward compatibility
-type DataNodeSeverServer interface {
-	mustEmbedUnimplementedDataNodeSeverServer()
+type DataNodeServer interface {
+	mustEmbedUnimplementedDataNodeServer()
 }
 
-// UnimplementedDataNodeSeverServer must be embedded to have forward compatible implementations.
-type UnimplementedDataNodeSeverServer struct {
+// UnimplementedDataNodeServer must be embedded to have forward compatible implementations.
+type UnimplementedDataNodeServer struct {
 }
 
-func (UnimplementedDataNodeSeverServer) mustEmbedUnimplementedDataNodeSeverServer() {}
+func (UnimplementedDataNodeServer) mustEmbedUnimplementedDataNodeServer() {}
 
-// UnsafeDataNodeSeverServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to DataNodeSeverServer will
+// UnsafeDataNodeServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to DataNodeServer will
 // result in compilation errors.
-type UnsafeDataNodeSeverServer interface {
-	mustEmbedUnimplementedDataNodeSeverServer()
+type UnsafeDataNodeServer interface {
+	mustEmbedUnimplementedDataNodeServer()
 }
 
-func RegisterDataNodeSeverServer(s grpc.ServiceRegistrar, srv DataNodeSeverServer) {
-	s.RegisterService(&DataNodeSever_ServiceDesc, srv)
+func RegisterDataNodeServer(s grpc.ServiceRegistrar, srv DataNodeServer) {
+	s.RegisterService(&DataNode_ServiceDesc, srv)
 }
 
-// DataNodeSever_ServiceDesc is the grpc.ServiceDesc for DataNodeSever service.
+// DataNode_ServiceDesc is the grpc.ServiceDesc for DataNode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var DataNodeSever_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "DataNodeSever",
-	HandlerType: (*DataNodeSeverServer)(nil),
+var DataNode_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "DataNode",
+	HandlerType: (*DataNodeServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams:     []grpc.StreamDesc{},
 	Metadata:    "proto/datanode/datanode.proto",

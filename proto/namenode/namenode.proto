@@ -1,21 +1,45 @@
 syntax = "proto3";
-option go_package = "namenode/server";
+option go_package = "namenode/pb";
 
-service NameNodeServer {
+service NameNode {
+    rpc Get(GetRequest)returns(GetResponse){}
+    rpc Put(PutRequest)returns(PutResponse){}
+
+    rpc HeartBeat(HeartBeatRequset)returns(HeartBeatResponse){}
 }
 
-message Requset {
-    string LocalFilePath = 1;
-    string RemoteFilePath = 2; 
+message GetRequest {
+    string remoteFilePath = 1;
 }
 
-message Response {
-    int64 ack = 1;  // result status
-    string msg = 2; // result details
-    message DataNodeInfo {
-        string addr = 1;  // ip:port 
-        
+message GetResponse {
+    repeated Chunk chunks = 1;
+}
 
-    }
-    repeated DataNodeInfo dataNodeInfo = 3;
+message PutRequest {
+    string remoteFilePath = 1;
+    uint64 filesize = 2;
+}
+
+message PutResponse {
+    repeated Chunk chunks = 1;
+}
+
+message HeartBeatRequset {
+    string address = 1;
+}
+
+message HeartBeatResponse {
+    int64 ack = 1;
+}
+
+// file chunks(a large file can be split to lots of smaller files)
+message Chunk {
+    repeated Backup backups = 1;
+    string fileKey = 2; // file's name in datanode.
+}
+
+// file backups (a file will be stored in different datanodes)
+message Backup {
+    string address = 1;
 }

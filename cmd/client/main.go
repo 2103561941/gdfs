@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gdfs/internal/client/cmd"
+	"github.com/cyb0225/gdfs/internal/client/cmd"
 )
 
 func main() {

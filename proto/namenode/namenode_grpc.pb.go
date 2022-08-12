@@ -4,10 +4,13 @@
 // - protoc             v3.21.3
 // source: proto/namenode/namenode.proto
 
-package server
+package pb
 
 import (
+	context "context"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -15,51 +18,160 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// NameNodeServerClient is the client API for NameNodeServer service.
+// NameNodeClient is the client API for NameNode service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type NameNodeServerClient interface {
+type NameNodeClient interface {
+	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
+	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error)
+	HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error)
 }
 
-type nameNodeServerClient struct {
+type nameNodeClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewNameNodeServerClient(cc grpc.ClientConnInterface) NameNodeServerClient {
-	return &nameNodeServerClient{cc}
+func NewNameNodeClient(cc grpc.ClientConnInterface) NameNodeClient {
+	return &nameNodeClient{cc}
 }
 
-// NameNodeServerServer is the server API for NameNodeServer service.
-// All implementations must embed UnimplementedNameNodeServerServer
+func (c *nameNodeClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+	out := new(GetResponse)
+	err := c.cc.Invoke(ctx, "/NameNode/Get", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nameNodeClient) Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error) {
+	out := new(PutResponse)
+	err := c.cc.Invoke(ctx, "/NameNode/Put", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nameNodeClient) HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error) {
+	out := new(HeartBeatResponse)
+	err := c.cc.Invoke(ctx, "/NameNode/HeartBeat", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// NameNodeServer is the server API for NameNode service.
+// All implementations must embed UnimplementedNameNodeServer
 // for forward compatibility
-type NameNodeServerServer interface {
-	mustEmbedUnimplementedNameNodeServerServer()
+type NameNodeServer interface {
+	Get(context.Context, *GetRequest) (*GetResponse, error)
+	Put(context.Context, *PutRequest) (*PutResponse, error)
+	HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error)
+	mustEmbedUnimplementedNameNodeServer()
 }
 
-// UnimplementedNameNodeServerServer must be embedded to have forward compatible implementations.
-type UnimplementedNameNodeServerServer struct {
+// UnimplementedNameNodeServer must be embedded to have forward compatible implementations.
+type UnimplementedNameNodeServer struct {
 }
 
-func (UnimplementedNameNodeServerServer) mustEmbedUnimplementedNameNodeServerServer() {}
+func (UnimplementedNameNodeServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedNameNodeServer) Put(context.Context, *PutRequest) (*PutResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
+}
+func (UnimplementedNameNodeServer) HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HeartBeat not implemented")
+}
+func (UnimplementedNameNodeServer) mustEmbedUnimplementedNameNodeServer() {}
 
-// UnsafeNameNodeServerServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to NameNodeServerServer will
+// UnsafeNameNodeServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to NameNodeServer will
 // result in compilation errors.
-type UnsafeNameNodeServerServer interface {
-	mustEmbedUnimplementedNameNodeServerServer()
+type UnsafeNameNodeServer interface {
+	mustEmbedUnimplementedNameNodeServer()
 }
 
-func RegisterNameNodeServerServer(s grpc.ServiceRegistrar, srv NameNodeServerServer) {
-	s.RegisterService(&NameNodeServer_ServiceDesc, srv)
+func RegisterNameNodeServer(s grpc.ServiceRegistrar, srv NameNodeServer) {
+	s.RegisterService(&NameNode_ServiceDesc, srv)
 }
 
-// NameNodeServer_ServiceDesc is the grpc.ServiceDesc for NameNodeServer service.
+func _NameNode_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NameNodeServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/NameNode/Get",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NameNodeServer).Get(ctx, req.(*GetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NameNode_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NameNodeServer).Put(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/NameNode/Put",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NameNodeServer).Put(ctx, req.(*PutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NameNode_HeartBeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HeartBeatRequset)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NameNodeServer).HeartBeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/NameNode/HeartBeat",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NameNodeServer).HeartBeat(ctx, req.(*HeartBeatRequset))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// NameNode_ServiceDesc is the grpc.ServiceDesc for NameNode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var NameNodeServer_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "NameNodeServer",
-	HandlerType: (*NameNodeServerServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "proto/namenode/namenode.proto",
+var NameNode_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "NameNode",
+	HandlerType: (*NameNodeServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Get",
+			Handler:    _NameNode_Get_Handler,
+		},
+		{
+			MethodName: "Put",
+			Handler:    _NameNode_Put_Handler,
+		},
+		{
+			MethodName: "HeartBeat",
+			Handler:    _NameNode_HeartBeat_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/namenode/namenode.proto",
 }
