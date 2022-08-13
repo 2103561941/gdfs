@@ -4,9 +4,7 @@ import "github.com/spf13/viper"
 
 // load configs
 func init() {
-	// the config file path is based on the root directory.
-	// and it can
 
-
+	viper.Set("chunckSize", 1024 * 1024) // Byte  
 	viper.Set("port", "50051")
 }

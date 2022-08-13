@@ -1,7 +1,12 @@
 package tree
 
 import (
+	"fmt"
+	"math"
 	"sync"
+
+	"github.com/cyb0225/gdfs/internal/pkg/util"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -35,7 +40,7 @@ type Node struct {
 	FileName string
 	FileType int    // directory or normal file
 	FilePath string // filepath contains the filename and its parents' directory
-	FileSize uint64
+	FileSize float64
 	FileKeys []string // file keys, it records the chunks' uuid of file
 
 	Children []*Node
@@ -83,7 +88,7 @@ func SetFilePath(filepath string) Option {
 }
 
 
-func SetFileSize(filesize uint64) Option {
+func SetFileSize(filesize float64) Option {
 	return func(node *Node) {
 		node.FileSize = filesize
 	}
@@ -91,4 +96,50 @@ func SetFileSize(filesize uint64) Option {
 
 func (n *Node) IsDirectory() bool {
 	return n.FileType == Direcotry
+}
+
+
+// do some checks before append child file.
+// here, I not check the filepath, it will check by tree Put funciton.
+// because, the file's relation belongs to the tree, not a node. 
+func (n *Node) AppendChild(node *Node) error {
+	if n.FileType != Direcotry {
+		return fmt.Errorf("file: %s is not a directory", n.FilePath)
+	}
+
+	for _, child := range n.Children {
+		if child.FileName == node.FileName {
+			return fmt.Errorf("file: %s is already exist in %s", node.FileName, n.FilePath)
+		}
+	}
+
+	n.Children = append(n.Children, node)
+	return nil
+}
+
+// depends on the size of file stored in node.
+func (n *Node) CreateFileKeys() error {
+	if n.FileType != NormalFile {
+		return fmt.Errorf("file: %s is a directory", n.FilePath)
+	}
+
+	if n.FileSize == 0 {
+		return fmt.Errorf("file: %s size is 0", n.FilePath)
+	}
+
+	//Rounded up
+	size := viper.GetFloat64("chunckSize") 
+	fmt.Println(size)
+	num := int(math.Ceil(n.FileSize / size))
+	fmt.Println("num: ", num)
+	n.FileKeys = make([]string, num)
+	for i := 0; i < len(n.FileKeys); i++ {
+		uuid, err := util.GetUUID()
+		if err != nil {
+			n.FileKeys = make([]string, 0)
+			return fmt.Errorf("creat file: %s keys: %w", n.FilePath, err)
+		}
+		n.FileKeys[i] = uuid
+	}
+	return nil
 }

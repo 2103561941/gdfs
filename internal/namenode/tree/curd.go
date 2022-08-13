@@ -26,24 +26,15 @@ func (t *Tree) Put(filepath string, node *Node) error {
 
 	lastIndex := len(patterns) - 1
 	pattern := patterns[lastIndex]
+	node.FileName = pattern
 	parentDir := mkdir(patterns[:lastIndex], t.Root, 0)
 	if parentDir == nil {
 		return fmt.Errorf("make directory failed")
 	}
-	// patentDir may not exist, it can be design as linux.
-	// for example, I pass /tmp/cyb/demo.txt, but there is not have directory named 'cyb'
-	// So, I can create the directory 'cyb', instead of return an error.
 
-	node.FileName = pattern
-	// check if the file is exist or not,
-	// if file is already existed, then return an error
-	for i := 0; i < len(parentDir.Children); i++ {
-		if parentDir.Children[i].FileName == pattern {
-			return fmt.Errorf("file: %s is already existed.", filepath)
-		}
+	if err := parentDir.AppendChild(node); err != nil {
+		return err
 	}
-	parentDir.Children = append(parentDir.Children, node)
-
 	return nil
 }
 
