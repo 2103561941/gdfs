@@ -34,12 +34,11 @@ func (t *Tree) Put(filepath string, node *Node) error {
 	// for example, I pass /tmp/cyb/demo.txt, but there is not have directory named 'cyb'
 	// So, I can create the directory 'cyb', instead of return an error.
 
-	node.Partten = pattern
-	node.FileMeta.Filename = pattern
+	node.FileName = pattern
 	// check if the file is exist or not,
 	// if file is already existed, then return an error
 	for i := 0; i < len(parentDir.Children); i++ {
-		if parentDir.Children[i].Partten == pattern {
+		if parentDir.Children[i].FileName == pattern {
 			return fmt.Errorf("file: %s is already existed.", filepath)
 		}
 	}
@@ -53,19 +52,19 @@ func (t *Tree) Put(filepath string, node *Node) error {
 // recursively searchFunc for matching values
 
 func search(patterns []string, node *Node, height int) *Node {
-	if patterns[height] != node.Partten {
+	if patterns[height] != node.FileName {
 		return nil
 	}
 
 	// it used to test funciton in crud.
-	log.Printf("node: %#v\n\n", node.FileMeta)
+	log.Printf("node: %#v\n\n", node)
 
 	if height == len(patterns)-1 {
 		return node
 	}
 
 	for i := 0; i < len(node.Children); i++ {
-		ans := search(patterns, node.Children[i], height + 1)
+		ans := search(patterns, node.Children[i], height+1)
 		if ans != nil {
 			return ans
 		}
@@ -75,7 +74,7 @@ func search(patterns []string, node *Node, height int) *Node {
 
 // this function is use to create directories recursively.
 func mkdir(patterns []string, node *Node, height int) *Node {
-	if patterns[height] != node.Partten {
+	if patterns[height] != node.FileName {
 		return nil
 	}
 
@@ -97,15 +96,10 @@ func mkdir(patterns []string, node *Node, height int) *Node {
 
 	// Notice!
 	// patterns[height] is the children of node, and we need to make a
-
-	dir := &Node{
-		Partten:  patterns[height],
-		Children: make([]*Node, 0),
-		FileMeta: &Meta{
-			Filename: patterns[height],
-			FileType: Direcotry,
-		},
-	}
+	dir := NewNode(
+		SetFileName(patterns[height]),
+		IsDirectory(true),
+	)
 
 	node.Children = append(node.Children, dir)
 	return mkdir(patterns, dir, height)

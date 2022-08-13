@@ -21,12 +21,12 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 	}
 
 
-	if node.FileMeta.FileType == tree.Direcotry {
+	if node.FileType == tree.Direcotry {
 		return nil, fmt.Errorf("file: %s is a directory\n", filepath)	
 	}
 
 	// keys is the file chunks' key
-	keys := node.FileMeta.FileKeys
+	keys := node.FileKeys
 	res := &pb.GetResponse{
 		Chunks: make([]*pb.Chunk, len(keys)),
 	}

@@ -11,12 +11,8 @@ var (
 // create a mock tree
 func createTree() {
 	tree.Root.Children = []*Node{
-		&Node{Partten: "abc", FileMeta: &Meta{
-			FileType: Direcotry,
-		}},
-		&Node{Partten: "abc", FileMeta: &Meta{
-			FileType: NormalFile,
-		}},
+		NewNode(SetFileName("abc"), IsDirectory(true)),
+		NewNode(SetFileName("abc"), IsDirectory(true)),
 	}
 }
 
@@ -40,12 +36,8 @@ func TestMkdir(t *testing.T) {
 
 func TestPut(t *testing.T) {
 	filepath := "/tmp/cyb/node/1.txt"
-	node := &Node{
-		Children: make([]*Node, 0),
-		FileMeta: &Meta{
-			FileType: NormalFile,
-		},
-	}
+
+	node := NewNode()
 	tree.Put(filepath, node)
 	s := search(split(filepath), tree.Root, 0)
 	if s != node {
@@ -55,7 +47,7 @@ func TestPut(t *testing.T) {
 				expe: %#v`, s, node)
 	}
 
-	if err := tree.Put(filepath, node); err != nil {
-		t.Fatalf("put twice failed: %s", err.Error())
+	if err := tree.Put(filepath, node); err == nil {
+		t.Fatalf("put twice failed not catch, please check the Put function")
 	}
 }

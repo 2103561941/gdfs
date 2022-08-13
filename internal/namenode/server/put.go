@@ -14,13 +14,12 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 
 	filepath := req.RemoteFilePath
 
-	if err := s.tree.Put(filepath, &tree.Node{
-		FileMeta: &tree.Meta{
-			FileType: tree.NormalFile,
-			Path: filepath,
-		},
-		Children: make([]*tree.Node, 0),
-	}); err != nil {
+	node := tree.NewNode(
+		tree.IsDirectory(false),
+		tree.SetFilePath(filepath),
+	)
+	
+	if err := s.tree.Put(filepath, node); err != nil {
 		return nil, err
 	}
 
