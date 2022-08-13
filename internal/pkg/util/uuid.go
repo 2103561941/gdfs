@@ -1,7 +1,8 @@
 package util
 
+import gonanoid "github.com/matoous/go-nanoid/v2"
 
-// get file chunck's uuid
-func GetUUID() string {
-	return ""
+func GetUUID() (id string, err error) {
+	id, err = gonanoid.New()
+	return
 }

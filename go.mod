@@ -3,6 +3,7 @@ module github.com/cyb0225/gdfs
 go 1.18
 
 require (
+	github.com/matoous/go-nanoid/v2 v2.0.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
