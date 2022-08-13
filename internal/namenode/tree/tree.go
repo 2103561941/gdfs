@@ -42,5 +42,5 @@ type Meta struct {
 	FileType int // directory or normal file
 	Path     string
 	FileSize uint64
-	FileKey  string // string key
+	FileKeys  []string // file keys, it records the chunks' uuid of file.
 }

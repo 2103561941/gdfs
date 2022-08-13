@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/cyb0225/gdfs/internal/namenode/alive"
 	"github.com/cyb0225/gdfs/internal/namenode/cache"
 	"github.com/cyb0225/gdfs/internal/namenode/tree"
 	pb "github.com/cyb0225/gdfs/proto/namenode"
@@ -16,6 +17,7 @@ type Server struct {
 	pb.UnimplementedNameNodeServer
 	tree *tree.Tree
 	cache *cache.Cache
+	alive *alive.Alive
 }
 
 // start rpc server

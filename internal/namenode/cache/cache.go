@@ -17,15 +17,10 @@ func NewCache() *Cache {
 
 // datanode infomation
 type Node struct {
-	chunks []*Chunk
-}
-
-// file Chunk
-type Chunk struct {
-	backups []*Backup
+	Backups []*Backup
 }
 
 // file backups, stroed the message of datanode
 type Backup struct {
-	address string // ip + port
+	Address string // ip + port
 }
