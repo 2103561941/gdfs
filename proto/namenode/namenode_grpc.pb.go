@@ -22,12 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NameNodeClient interface {
-	Put(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
-	Get(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
-	Delete(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
-	Mkdir(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
-	Rename(ctx context.Context, in *RenameRequest, opts ...grpc.CallOption) (*Response, error)
-	List(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 }
 
 type nameNodeClient struct {
@@ -38,54 +33,9 @@ func NewNameNodeClient(cc grpc.ClientConnInterface) NameNodeClient {
 	return &nameNodeClient{cc}
 }
 
-func (c *nameNodeClient) Put(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/NameNode/Put", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nameNodeClient) Get(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
+func (c *nameNodeClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+	out := new(GetResponse)
 	err := c.cc.Invoke(ctx, "/NameNode/Get", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nameNodeClient) Delete(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/NameNode/Delete", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nameNodeClient) Mkdir(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/NameNode/Mkdir", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nameNodeClient) Rename(ctx context.Context, in *RenameRequest, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/NameNode/Rename", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nameNodeClient) List(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/NameNode/List", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,12 +46,7 @@ func (c *nameNodeClient) List(ctx context.Context, in *Request, opts ...grpc.Cal
 // All implementations must embed UnimplementedNameNodeServer
 // for forward compatibility
 type NameNodeServer interface {
-	Put(context.Context, *Request) (*Response, error)
-	Get(context.Context, *Request) (*Response, error)
-	Delete(context.Context, *Request) (*Response, error)
-	Mkdir(context.Context, *Request) (*Response, error)
-	Rename(context.Context, *RenameRequest) (*Response, error)
-	List(context.Context, *Request) (*Response, error)
+	Get(context.Context, *GetRequest) (*GetResponse, error)
 	mustEmbedUnimplementedNameNodeServer()
 }
 
@@ -109,23 +54,8 @@ type NameNodeServer interface {
 type UnimplementedNameNodeServer struct {
 }
 
-func (UnimplementedNameNodeServer) Put(context.Context, *Request) (*Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
-}
-func (UnimplementedNameNodeServer) Get(context.Context, *Request) (*Response, error) {
+func (UnimplementedNameNodeServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
-}
-func (UnimplementedNameNodeServer) Delete(context.Context, *Request) (*Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
-}
-func (UnimplementedNameNodeServer) Mkdir(context.Context, *Request) (*Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Mkdir not implemented")
-}
-func (UnimplementedNameNodeServer) Rename(context.Context, *RenameRequest) (*Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Rename not implemented")
-}
-func (UnimplementedNameNodeServer) List(context.Context, *Request) (*Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
 func (UnimplementedNameNodeServer) mustEmbedUnimplementedNameNodeServer() {}
 
@@ -140,26 +70,8 @@ func RegisterNameNodeServer(s grpc.ServiceRegistrar, srv NameNodeServer) {
 	s.RegisterService(&NameNode_ServiceDesc, srv)
 }
 
-func _NameNode_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Request)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NameNodeServer).Put(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/NameNode/Put",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NameNodeServer).Put(ctx, req.(*Request))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _NameNode_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Request)
+	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -171,79 +83,7 @@ func _NameNode_Get_Handler(srv interface{}, ctx context.Context, dec func(interf
 		FullMethod: "/NameNode/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NameNodeServer).Get(ctx, req.(*Request))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NameNode_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Request)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NameNodeServer).Delete(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/NameNode/Delete",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NameNodeServer).Delete(ctx, req.(*Request))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NameNode_Mkdir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Request)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NameNodeServer).Mkdir(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/NameNode/Mkdir",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NameNodeServer).Mkdir(ctx, req.(*Request))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NameNode_Rename_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RenameRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NameNodeServer).Rename(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/NameNode/Rename",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NameNodeServer).Rename(ctx, req.(*RenameRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NameNode_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Request)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NameNodeServer).List(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/NameNode/List",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NameNodeServer).List(ctx, req.(*Request))
+		return srv.(NameNodeServer).Get(ctx, req.(*GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -256,28 +96,8 @@ var NameNode_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*NameNodeServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Put",
-			Handler:    _NameNode_Put_Handler,
-		},
-		{
 			MethodName: "Get",
 			Handler:    _NameNode_Get_Handler,
-		},
-		{
-			MethodName: "Delete",
-			Handler:    _NameNode_Delete_Handler,
-		},
-		{
-			MethodName: "Mkdir",
-			Handler:    _NameNode_Mkdir_Handler,
-		},
-		{
-			MethodName: "Rename",
-			Handler:    _NameNode_Rename_Handler,
-		},
-		{
-			MethodName: "List",
-			Handler:    _NameNode_List_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

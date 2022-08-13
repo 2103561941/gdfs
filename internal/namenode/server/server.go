@@ -20,6 +20,14 @@ type Server struct {
 	alive *alive.Alive
 }
 
+func newServer() *Server {
+	return &Server{
+		tree: tree.NewTree(),
+		cache: cache.NewCache(),
+		alive: alive.NewAlive(),
+	}
+}
+
 // start rpc server
 func RunServer(port string) error {
 	lis, err := net.Listen("tcp", ":"+port)
@@ -28,7 +36,7 @@ func RunServer(port string) error {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterNameNodeServer(s, &Server{})
+	pb.RegisterNameNodeServer(s, newServer())
 
 	log.Printf("server start listening at %s", port)
 	if err = s.Serve(lis); err != nil {
