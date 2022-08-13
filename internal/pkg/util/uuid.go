@@ -1,7 +1,7 @@
 package util
 
 
-// get file chunk's uuid
+// get file chunck's uuid
 func GetUUID() string {
 	return ""
 }

@@ -28,9 +28,9 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 	chunks := make([]*pb.Chunk, 0)
 
 	// get backups form keys
-	for i, v := range keys {
+	for i, key := range keys {
 		// get backups' datanode address
-		backups := s.cache.Get(v)
+		backups := s.cache.Get(key)
 		if backups == nil || len(backups.Backups) == 0 {
 			return nil, errors.New("file is not exist")
 		}
@@ -38,14 +38,15 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		if chunks[i].Backups == nil {
 			chunks[i].Backups = make([]*pb.Backup, 0)
 		}
+		chunks[i].FileKey = key
 
 		// check is datanode alive
 		for _, b := range backups.Backups {
 			if ok := s.alive.IsAlive(b.Address); ok {
-				chunks[i].Backups = append(chunks[i].Backups, &pb.Backup{FileKey: b.Address})
+				chunks[i].Backups = append(chunks[i].Backups, &pb.Backup{Address: b.Address})
 			}
 		}
-		// it turns out that there is no datanode store this file chunk. file is lost.
+		// it turns out that there is no datanode store this file chunck. file is lost.
 		if chunks[i].Backups == nil || len(chunks[i].Backups) == 0 {
 			return nil, errors.New("file is lost")
 		}

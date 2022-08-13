@@ -23,6 +23,3 @@ func (c *Cache) Get(key string) *Node {
 
 // choose which datanode to store this file block
 func storeBalance() {}
-
-// chunk a big file to some smaller files.
-func chunkfile() {}
