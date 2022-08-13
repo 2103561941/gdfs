@@ -20,6 +20,12 @@ type Node struct {
 	Backups []*Backup
 }
 
+func NewNode() *Node {
+	return &Node{
+		Backups: make([]*Backup, 0),
+	}
+}
+
 // file backups, stroed the message of datanode
 type Backup struct {
 	Address string // ip + port

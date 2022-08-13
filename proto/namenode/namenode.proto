@@ -4,6 +4,8 @@ option go_package = "namenode/pb";
 service NameNode {
     rpc Get(GetRequest)returns(GetResponse){}
     rpc Put(PutRequest)returns(PutResponse){}
+
+    rpc HeartBeat(HeartBeatRequset)returns(HeartBeatResponse){}
 }
 
 message GetRequest {
@@ -20,6 +22,14 @@ message PutRequest {
 
 message PutResponse {
     repeated Chunk chunks = 1;
+}
+
+message HeartBeatRequset {
+    string address = 1;
+}
+
+message HeartBeatResponse {
+    int64 ack = 1;
 }
 
 // file chunks(a large file can be split to lots of smaller files)

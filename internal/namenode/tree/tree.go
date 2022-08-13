@@ -88,3 +88,7 @@ func SetFileSize(filesize uint64) Option {
 		node.FileSize = filesize
 	}
 }
+
+func (n *Node) IsDirectory() bool {
+	return n.FileType == Direcotry
+}

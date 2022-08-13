@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type NameNodeClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error)
+	HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error)
 }
 
 type nameNodeClient struct {
@@ -52,12 +53,22 @@ func (c *nameNodeClient) Put(ctx context.Context, in *PutRequest, opts ...grpc.C
 	return out, nil
 }
 
+func (c *nameNodeClient) HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error) {
+	out := new(HeartBeatResponse)
+	err := c.cc.Invoke(ctx, "/NameNode/HeartBeat", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NameNodeServer is the server API for NameNode service.
 // All implementations must embed UnimplementedNameNodeServer
 // for forward compatibility
 type NameNodeServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Put(context.Context, *PutRequest) (*PutResponse, error)
+	HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error)
 	mustEmbedUnimplementedNameNodeServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedNameNodeServer) Get(context.Context, *GetRequest) (*GetRespon
 }
 func (UnimplementedNameNodeServer) Put(context.Context, *PutRequest) (*PutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
+}
+func (UnimplementedNameNodeServer) HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HeartBeat not implemented")
 }
 func (UnimplementedNameNodeServer) mustEmbedUnimplementedNameNodeServer() {}
 
@@ -120,6 +134,24 @@ func _NameNode_Put_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NameNode_HeartBeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HeartBeatRequset)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NameNodeServer).HeartBeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/NameNode/HeartBeat",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NameNodeServer).HeartBeat(ctx, req.(*HeartBeatRequset))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NameNode_ServiceDesc is the grpc.ServiceDesc for NameNode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var NameNode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Put",
 			Handler:    _NameNode_Put_Handler,
+		},
+		{
+			MethodName: "HeartBeat",
+			Handler:    _NameNode_HeartBeat_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
