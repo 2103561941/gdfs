@@ -3,6 +3,7 @@ option go_package = "namenode/pb";
 
 service NameNode {
     rpc Get(GetRequest)returns(GetResponse){}
+    rpc Put(PutRequest)returns(PutResponse){}
 }
 
 message GetRequest {
@@ -10,6 +11,14 @@ message GetRequest {
 }
 
 message GetResponse {
+    repeated Chunk chunks = 1;
+}
+
+message PutRequest {
+    string remoteFilePath = 1;
+}
+
+message PutResponse {
     repeated Chunk chunks = 1;
 }
 

@@ -114,6 +114,100 @@ func (x *GetResponse) GetChunks() []*Chunk {
 	return nil
 }
 
+type PutRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	RemoteFilePath string `protobuf:"bytes,1,opt,name=remoteFilePath,proto3" json:"remoteFilePath,omitempty"`
+}
+
+func (x *PutRequest) Reset() {
+	*x = PutRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_namenode_namenode_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PutRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PutRequest) ProtoMessage() {}
+
+func (x *PutRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_namenode_namenode_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PutRequest.ProtoReflect.Descriptor instead.
+func (*PutRequest) Descriptor() ([]byte, []int) {
+	return file_proto_namenode_namenode_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PutRequest) GetRemoteFilePath() string {
+	if x != nil {
+		return x.RemoteFilePath
+	}
+	return ""
+}
+
+type PutResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Chunks []*Chunk `protobuf:"bytes,1,rep,name=chunks,proto3" json:"chunks,omitempty"`
+}
+
+func (x *PutResponse) Reset() {
+	*x = PutResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_namenode_namenode_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PutResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PutResponse) ProtoMessage() {}
+
+func (x *PutResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_namenode_namenode_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PutResponse.ProtoReflect.Descriptor instead.
+func (*PutResponse) Descriptor() ([]byte, []int) {
+	return file_proto_namenode_namenode_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PutResponse) GetChunks() []*Chunk {
+	if x != nil {
+		return x.Chunks
+	}
+	return nil
+}
+
 // file chunks(a large file can be split to lots of smaller files)
 type Chunk struct {
 	state         protoimpl.MessageState
@@ -126,7 +220,7 @@ type Chunk struct {
 func (x *Chunk) Reset() {
 	*x = Chunk{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_namenode_namenode_proto_msgTypes[2]
+		mi := &file_proto_namenode_namenode_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -139,7 +233,7 @@ func (x *Chunk) String() string {
 func (*Chunk) ProtoMessage() {}
 
 func (x *Chunk) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_namenode_namenode_proto_msgTypes[2]
+	mi := &file_proto_namenode_namenode_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +246,7 @@ func (x *Chunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Chunk.ProtoReflect.Descriptor instead.
 func (*Chunk) Descriptor() ([]byte, []int) {
-	return file_proto_namenode_namenode_proto_rawDescGZIP(), []int{2}
+	return file_proto_namenode_namenode_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Chunk) GetBackups() []*Backup {
@@ -175,7 +269,7 @@ type Backup struct {
 func (x *Backup) Reset() {
 	*x = Backup{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_namenode_namenode_proto_msgTypes[3]
+		mi := &file_proto_namenode_namenode_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -188,7 +282,7 @@ func (x *Backup) String() string {
 func (*Backup) ProtoMessage() {}
 
 func (x *Backup) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_namenode_namenode_proto_msgTypes[3]
+	mi := &file_proto_namenode_namenode_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -201,7 +295,7 @@ func (x *Backup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Backup.ProtoReflect.Descriptor instead.
 func (*Backup) Descriptor() ([]byte, []int) {
-	return file_proto_namenode_namenode_proto_rawDescGZIP(), []int{3}
+	return file_proto_namenode_namenode_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Backup) GetFileKey() string {
@@ -230,7 +324,7 @@ type DatanodeInfo struct {
 func (x *DatanodeInfo) Reset() {
 	*x = DatanodeInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_namenode_namenode_proto_msgTypes[4]
+		mi := &file_proto_namenode_namenode_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -243,7 +337,7 @@ func (x *DatanodeInfo) String() string {
 func (*DatanodeInfo) ProtoMessage() {}
 
 func (x *DatanodeInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_namenode_namenode_proto_msgTypes[4]
+	mi := &file_proto_namenode_namenode_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -256,7 +350,7 @@ func (x *DatanodeInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DatanodeInfo.ProtoReflect.Descriptor instead.
 func (*DatanodeInfo) Descriptor() ([]byte, []int) {
-	return file_proto_namenode_namenode_proto_rawDescGZIP(), []int{4}
+	return file_proto_namenode_namenode_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DatanodeInfo) GetAddr() string {
@@ -277,21 +371,30 @@ var file_proto_namenode_namenode_proto_rawDesc = []byte{
 	0x65, 0x50, 0x61, 0x74, 0x68, 0x22, 0x2d, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70,
 	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1e, 0x0a, 0x06, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x73, 0x18, 0x01,
 	0x20, 0x03, 0x28, 0x0b, 0x32, 0x06, 0x2e, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x52, 0x06, 0x63, 0x68,
-	0x75, 0x6e, 0x6b, 0x73, 0x22, 0x2a, 0x0a, 0x05, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x12, 0x21, 0x0a,
-	0x07, 0x62, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x07,
-	0x2e, 0x42, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x52, 0x07, 0x62, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x73,
-	0x22, 0x4f, 0x0a, 0x06, 0x42, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x12, 0x18, 0x0a, 0x07, 0x66, 0x69,
-	0x6c, 0x65, 0x4b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x66, 0x69, 0x6c,
-	0x65, 0x4b, 0x65, 0x79, 0x12, 0x2b, 0x0a, 0x09, 0x64, 0x61, 0x74, 0x61, 0x6e, 0x6f, 0x64, 0x65,
-	0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x6e, 0x6f,
-	0x64, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x09, 0x64, 0x61, 0x74, 0x61, 0x6e, 0x6f, 0x64, 0x65,
-	0x73, 0x22, 0x22, 0x0a, 0x0c, 0x44, 0x61, 0x74, 0x61, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x6e, 0x66,
-	0x6f, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x04, 0x61, 0x64, 0x64, 0x72, 0x32, 0x2e, 0x0a, 0x08, 0x4e, 0x61, 0x6d, 0x65, 0x4e, 0x6f, 0x64,
-	0x65, 0x12, 0x22, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x0b, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0c, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x0d, 0x5a, 0x0b, 0x6e, 0x61, 0x6d, 0x65, 0x6e, 0x6f, 0x64,
-	0x65, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x75, 0x6e, 0x6b, 0x73, 0x22, 0x34, 0x0a, 0x0a, 0x50, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x26, 0x0a, 0x0e, 0x72, 0x65, 0x6d, 0x6f, 0x74, 0x65, 0x46, 0x69, 0x6c, 0x65,
+	0x50, 0x61, 0x74, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x72, 0x65, 0x6d, 0x6f,
+	0x74, 0x65, 0x46, 0x69, 0x6c, 0x65, 0x50, 0x61, 0x74, 0x68, 0x22, 0x2d, 0x0a, 0x0b, 0x50, 0x75,
+	0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1e, 0x0a, 0x06, 0x63, 0x68, 0x75,
+	0x6e, 0x6b, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x06, 0x2e, 0x43, 0x68, 0x75, 0x6e,
+	0x6b, 0x52, 0x06, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x73, 0x22, 0x2a, 0x0a, 0x05, 0x43, 0x68, 0x75,
+	0x6e, 0x6b, 0x12, 0x21, 0x0a, 0x07, 0x62, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x73, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x07, 0x2e, 0x42, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x52, 0x07, 0x62, 0x61,
+	0x63, 0x6b, 0x75, 0x70, 0x73, 0x22, 0x4f, 0x0a, 0x06, 0x42, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x12,
+	0x18, 0x0a, 0x07, 0x66, 0x69, 0x6c, 0x65, 0x4b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x07, 0x66, 0x69, 0x6c, 0x65, 0x4b, 0x65, 0x79, 0x12, 0x2b, 0x0a, 0x09, 0x64, 0x61, 0x74,
+	0x61, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x44,
+	0x61, 0x74, 0x61, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x09, 0x64, 0x61, 0x74,
+	0x61, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x22, 0x22, 0x0a, 0x0c, 0x44, 0x61, 0x74, 0x61, 0x6e, 0x6f,
+	0x64, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72, 0x32, 0x52, 0x0a, 0x08, 0x4e, 0x61,
+	0x6d, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x22, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x0b, 0x2e,
+	0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0c, 0x2e, 0x47, 0x65, 0x74,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x22, 0x0a, 0x03, 0x50, 0x75,
+	0x74, 0x12, 0x0b, 0x2e, 0x50, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0c,
+	0x2e, 0x50, 0x75, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x0d,
+	0x5a, 0x0b, 0x6e, 0x61, 0x6d, 0x65, 0x6e, 0x6f, 0x64, 0x65, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -306,25 +409,30 @@ func file_proto_namenode_namenode_proto_rawDescGZIP() []byte {
 	return file_proto_namenode_namenode_proto_rawDescData
 }
 
-var file_proto_namenode_namenode_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_namenode_namenode_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_namenode_namenode_proto_goTypes = []interface{}{
 	(*GetRequest)(nil),   // 0: GetRequest
 	(*GetResponse)(nil),  // 1: GetResponse
-	(*Chunk)(nil),        // 2: Chunk
-	(*Backup)(nil),       // 3: Backup
-	(*DatanodeInfo)(nil), // 4: DatanodeInfo
+	(*PutRequest)(nil),   // 2: PutRequest
+	(*PutResponse)(nil),  // 3: PutResponse
+	(*Chunk)(nil),        // 4: Chunk
+	(*Backup)(nil),       // 5: Backup
+	(*DatanodeInfo)(nil), // 6: DatanodeInfo
 }
 var file_proto_namenode_namenode_proto_depIdxs = []int32{
-	2, // 0: GetResponse.chunks:type_name -> Chunk
-	3, // 1: Chunk.backups:type_name -> Backup
-	4, // 2: Backup.datanodes:type_name -> DatanodeInfo
-	0, // 3: NameNode.Get:input_type -> GetRequest
-	1, // 4: NameNode.Get:output_type -> GetResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	4, // 0: GetResponse.chunks:type_name -> Chunk
+	4, // 1: PutResponse.chunks:type_name -> Chunk
+	5, // 2: Chunk.backups:type_name -> Backup
+	6, // 3: Backup.datanodes:type_name -> DatanodeInfo
+	0, // 4: NameNode.Get:input_type -> GetRequest
+	2, // 5: NameNode.Put:input_type -> PutRequest
+	1, // 6: NameNode.Get:output_type -> GetResponse
+	3, // 7: NameNode.Put:output_type -> PutResponse
+	6, // [6:8] is the sub-list for method output_type
+	4, // [4:6] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_proto_namenode_namenode_proto_init() }
@@ -358,7 +466,7 @@ func file_proto_namenode_namenode_proto_init() {
 			}
 		}
 		file_proto_namenode_namenode_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Chunk); i {
+			switch v := v.(*PutRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -370,7 +478,7 @@ func file_proto_namenode_namenode_proto_init() {
 			}
 		}
 		file_proto_namenode_namenode_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Backup); i {
+			switch v := v.(*PutResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -382,6 +490,30 @@ func file_proto_namenode_namenode_proto_init() {
 			}
 		}
 		file_proto_namenode_namenode_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Chunk); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_namenode_namenode_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Backup); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_namenode_namenode_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DatanodeInfo); i {
 			case 0:
 				return &v.state
@@ -400,7 +532,7 @@ func file_proto_namenode_namenode_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_namenode_namenode_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
