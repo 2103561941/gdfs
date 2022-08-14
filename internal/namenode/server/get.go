@@ -25,20 +25,19 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 
 	// keys is the file chunks' key
 	keys := node.FileKeys
-	chunks := make([]*pb.Chunk, 0)
+	chunks := make([]*pb.Chunk, len(keys))
 
 	// get backups form keys
 	for i, key := range keys {
+
+		chunks[i].FileKey = key
+		//TODO: there has a bug to fix.
+		chunks[i].Backups = make([]*pb.Backup, 0)
 		// get backups' datanode address
 		backups := s.cache.Get(key)
 		if backups == nil || len(backups.Backups) == 0 {
 			return nil, errors.New("file is not exist")
 		}
-
-		if chunks[i].Backups == nil {
-			chunks[i].Backups = make([]*pb.Backup, 0)
-		}
-		chunks[i].FileKey = key
 
 		// check is datanode alive
 		for _, b := range backups.Backups {
