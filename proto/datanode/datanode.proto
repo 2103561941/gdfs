@@ -1,17 +1,26 @@
 syntax = "proto3";
-option go_package = "datanode/pb";
+option go_package = "datanode.proto";
+package datanode_proto;
+
 
 service DataNode {
+    rpc Get(GetRequset)returns(stream GetResponse){}
+    rpc Put(stream PutRequest)returns(PutResponse){}
 }
 
-message Requset {
-    string localFilePath = 1;
-    string remoteFilePath = 2; 
-    bytes databytes = 3;  // file data
+message GetRequset {
+    string filename = 1; 
 }
 
-message Response {
-    int64 ack = 1;  // result status
-    string msg = 2; // result details
-    bytes Databytes = 3;  // file data
+message GetResponse {
+    bytes databytes = 2;  // file data
+}
+
+message PutRequest {
+    bytes databytes = 1;  // file data
+    string filename = 2;
+}
+
+message PutResponse {
+
 }

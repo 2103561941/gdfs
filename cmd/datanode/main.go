@@ -1,13 +1,12 @@
 package main
 
-import "fmt"
-
-var (
-	
+import (
+	"github.com/cyb0225/gdfs/internal/datanode"
 )
 
+var ()
 
 func main() {
-	fmt.Println("I am datanode")
-	return 
+	datanode.Run()
+	return
 }

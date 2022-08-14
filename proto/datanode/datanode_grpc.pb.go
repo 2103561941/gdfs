@@ -4,10 +4,13 @@
 // - protoc             v3.21.3
 // source: proto/datanode/datanode.proto
 
-package pb
+package datanode_proto
 
 import (
+	context "context"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,6 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DataNodeClient interface {
+	Get(ctx context.Context, in *GetRequset, opts ...grpc.CallOption) (DataNode_GetClient, error)
+	Put(ctx context.Context, opts ...grpc.CallOption) (DataNode_PutClient, error)
 }
 
 type dataNodeClient struct {
@@ -29,10 +34,78 @@ func NewDataNodeClient(cc grpc.ClientConnInterface) DataNodeClient {
 	return &dataNodeClient{cc}
 }
 
+func (c *dataNodeClient) Get(ctx context.Context, in *GetRequset, opts ...grpc.CallOption) (DataNode_GetClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DataNode_ServiceDesc.Streams[0], "/datanode_proto.DataNode/Get", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &dataNodeGetClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type DataNode_GetClient interface {
+	Recv() (*GetResponse, error)
+	grpc.ClientStream
+}
+
+type dataNodeGetClient struct {
+	grpc.ClientStream
+}
+
+func (x *dataNodeGetClient) Recv() (*GetResponse, error) {
+	m := new(GetResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *dataNodeClient) Put(ctx context.Context, opts ...grpc.CallOption) (DataNode_PutClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DataNode_ServiceDesc.Streams[1], "/datanode_proto.DataNode/Put", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &dataNodePutClient{stream}
+	return x, nil
+}
+
+type DataNode_PutClient interface {
+	Send(*PutRequest) error
+	CloseAndRecv() (*PutResponse, error)
+	grpc.ClientStream
+}
+
+type dataNodePutClient struct {
+	grpc.ClientStream
+}
+
+func (x *dataNodePutClient) Send(m *PutRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *dataNodePutClient) CloseAndRecv() (*PutResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(PutResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // DataNodeServer is the server API for DataNode service.
 // All implementations must embed UnimplementedDataNodeServer
 // for forward compatibility
 type DataNodeServer interface {
+	Get(*GetRequset, DataNode_GetServer) error
+	Put(DataNode_PutServer) error
 	mustEmbedUnimplementedDataNodeServer()
 }
 
@@ -40,6 +113,12 @@ type DataNodeServer interface {
 type UnimplementedDataNodeServer struct {
 }
 
+func (UnimplementedDataNodeServer) Get(*GetRequset, DataNode_GetServer) error {
+	return status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedDataNodeServer) Put(DataNode_PutServer) error {
+	return status.Errorf(codes.Unimplemented, "method Put not implemented")
+}
 func (UnimplementedDataNodeServer) mustEmbedUnimplementedDataNodeServer() {}
 
 // UnsafeDataNodeServer may be embedded to opt out of forward compatibility for this service.
@@ -53,13 +132,71 @@ func RegisterDataNodeServer(s grpc.ServiceRegistrar, srv DataNodeServer) {
 	s.RegisterService(&DataNode_ServiceDesc, srv)
 }
 
+func _DataNode_Get_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetRequset)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(DataNodeServer).Get(m, &dataNodeGetServer{stream})
+}
+
+type DataNode_GetServer interface {
+	Send(*GetResponse) error
+	grpc.ServerStream
+}
+
+type dataNodeGetServer struct {
+	grpc.ServerStream
+}
+
+func (x *dataNodeGetServer) Send(m *GetResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _DataNode_Put_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(DataNodeServer).Put(&dataNodePutServer{stream})
+}
+
+type DataNode_PutServer interface {
+	SendAndClose(*PutResponse) error
+	Recv() (*PutRequest, error)
+	grpc.ServerStream
+}
+
+type dataNodePutServer struct {
+	grpc.ServerStream
+}
+
+func (x *dataNodePutServer) SendAndClose(m *PutResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *dataNodePutServer) Recv() (*PutRequest, error) {
+	m := new(PutRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // DataNode_ServiceDesc is the grpc.ServiceDesc for DataNode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var DataNode_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "DataNode",
+	ServiceName: "datanode_proto.DataNode",
 	HandlerType: (*DataNodeServer)(nil),
 	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "proto/datanode/datanode.proto",
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Get",
+			Handler:       _DataNode_Get_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Put",
+			Handler:       _DataNode_Put_Handler,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "proto/datanode/datanode.proto",
 }

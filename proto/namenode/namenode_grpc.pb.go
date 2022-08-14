@@ -4,7 +4,7 @@
 // - protoc             v3.21.3
 // source: proto/namenode/namenode.proto
 
-package pb
+package namenode_proto
 
 import (
 	context "context"
@@ -37,7 +37,7 @@ func NewNameNodeClient(cc grpc.ClientConnInterface) NameNodeClient {
 
 func (c *nameNodeClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
 	out := new(GetResponse)
-	err := c.cc.Invoke(ctx, "/NameNode/Get", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/namenode_proto.NameNode/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *nameNodeClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.C
 
 func (c *nameNodeClient) Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error) {
 	out := new(PutResponse)
-	err := c.cc.Invoke(ctx, "/NameNode/Put", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/namenode_proto.NameNode/Put", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *nameNodeClient) Put(ctx context.Context, in *PutRequest, opts ...grpc.C
 
 func (c *nameNodeClient) HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error) {
 	out := new(HeartBeatResponse)
-	err := c.cc.Invoke(ctx, "/NameNode/HeartBeat", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/namenode_proto.NameNode/HeartBeat", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func _NameNode_Get_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/NameNode/Get",
+		FullMethod: "/namenode_proto.NameNode/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NameNodeServer).Get(ctx, req.(*GetRequest))
@@ -126,7 +126,7 @@ func _NameNode_Put_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/NameNode/Put",
+		FullMethod: "/namenode_proto.NameNode/Put",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NameNodeServer).Put(ctx, req.(*PutRequest))
@@ -144,7 +144,7 @@ func _NameNode_HeartBeat_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/NameNode/HeartBeat",
+		FullMethod: "/namenode_proto.NameNode/HeartBeat",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NameNodeServer).HeartBeat(ctx, req.(*HeartBeatRequset))
@@ -156,7 +156,7 @@ func _NameNode_HeartBeat_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var NameNode_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "NameNode",
+	ServiceName: "namenode_proto.NameNode",
 	HandlerType: (*NameNodeServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
