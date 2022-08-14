@@ -28,23 +28,20 @@ gen.proto:
 ## start rpc server
 .PYONY: run.client
 run.client: client.o
-	@-echo run client...
-	@./client.o
+	@ go build -o client.o cmd/client/main.go
+# @./client.o
 
 
 port = 50051
 .PYONY: run.namenode
 run.namenode:
-	@-echo build...
 	@ go build -o namenode.o cmd/namenode/main.go
-	@-echo run namenode...
-# @./namenode --port=${port}
 	@./namenode.o
 
 
 .PYONY: run.datanode
 run.datanode: datanode.o
-	@-echo run datanode...
+	@ go build -o datanode.o cmd/datanode/main.go
 	@./datanode.o
 
 

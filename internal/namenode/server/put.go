@@ -51,7 +51,9 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 		}
 		backups := make([]*pb.Backup, len(adds))
 		for j := 0; j < len(adds); j++ {
-			backups[j].Address = adds[i]
+			backups[j] = &pb.Backup{
+				Address: adds[j],
+			}
 		}
 		chunk := &pb.Chunk{
 			Backups: backups,

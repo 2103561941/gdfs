@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	timeout     = time.Second * 1 //
-	backupN int = 3
+	timeout     = time.Second * 50 //
+	backupN int = 3 // it is longer than datanode heartbeat time
 )
 
 // record alived datanode
