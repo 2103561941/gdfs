@@ -116,8 +116,7 @@ func split(filepath string) []string {
 	return patterns
 }
 
-
-// chunck a big file to some smaller files.
-func (t *Tree)chunkfile() {
+// chunk a big file to some smaller files.
+func (t *Tree) chunkfile() {
 
 }

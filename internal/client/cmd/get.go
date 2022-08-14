@@ -34,16 +34,16 @@ func Get(cmd *cobra.Command, args []string) {
 	// localFilePath := args[0] // save remoteFile to this file
 	remoteFilePath := args[1]
 
-	res, err := getNode(remoteFilePath)
+	res, err := get(remoteFilePath)
 	if err != nil {
 		log.Fatalf("get datanode information from namenode failed: %s\n", err.Error())
 	}
 
-	fmt.Printf("client get server: %#v", res)
+	fmt.Printf("client get server: %+v", res)
 }
 
 // get filepath's datanodes information from namenode
-func getNode(filepath string) (*pb.GetResponse, error) {
+func get(filepath string) (*pb.GetResponse, error) {
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("connect to namenode[%s] failed: %w", addr, err)

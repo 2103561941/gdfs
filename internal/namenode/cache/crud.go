@@ -11,7 +11,7 @@ func (c *Cache) Put(key string) error {
 // get which datanode stored this files' chunks and backups.
 func (c *Cache) Get(key string) *Node {
 	c.rw.RLock()
-	defer c.rw.Unlock()
+	defer c.rw.RUnlock()
 
 	node, ok := c.mp[key]
 	if !ok {
