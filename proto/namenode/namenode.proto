@@ -18,7 +18,7 @@ message GetResponse {
 
 message PutRequest {
     string remoteFilePath = 1;
-    uint64 filesize = 2;
+    double filesize = 2;
 }
 
 message PutResponse {
