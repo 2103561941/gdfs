@@ -10,7 +10,7 @@ import (
 )
 
 // choose which datanode to store this file
-// and create file chuncks' key, but not push it to the cache. It needs datanode report.
+// and create file chunks' key, but not push it to the cache. It needs datanode report.
 
 // Put the node into directory tree, but don't put it to cache,
 // 	cache should be pushed when datanode already stored it.
@@ -42,7 +42,25 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 		return nil, err
 	}
 
-	res := &pb.PutResponse{}
+	chunks := make([]*pb.Chunk, len(node.FileKeys))
+	// search datanode to store backups
+	for i := 0; i < len(node.FileKeys); i++ {
+		adds, err := s.alive.Backup()
+		if err != nil {
+			return nil, err
+		}
+		backups := make([]*pb.Backup, len(adds))
+		for j := 0; j < len(adds); j++ {
+			backups[j].Address = adds[i]
+		}
+		chunk := &pb.Chunk{
+			Backups: backups,
+			FileKey: node.FileKeys[i],
+		}
+		chunks[i] = chunk
+	}
+
+	res := &pb.PutResponse{Chunks: chunks}	
 
 	return res, nil
 }

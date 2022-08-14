@@ -12,11 +12,11 @@ import (
 // get datanode infomation
 func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
 	log.Println("into Get function")
-
+	
 	filepath := req.RemoteFilePath
 	node := s.tree.Get(filepath)
 	if node == nil {
-		return nil, fmt.Errorf("file: %s not exist", filepath)
+		return nil, fmt.Errorf("file: %s is not exist", filepath)
 	}
 
 	if node.IsDirectory() {
@@ -25,14 +25,17 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 
 	// keys is the file chunks' key
 	keys := node.FileKeys
+
 	chunks := make([]*pb.Chunk, len(keys))
 
 	// get backups form keys
 	for i, key := range keys {
+		chunk := &pb.Chunk{
+			FileKey: key,
+		}
+		chunk.FileKey = key
 
-		chunks[i].FileKey = key
-		//TODO: there has a bug to fix.
-		chunks[i].Backups = make([]*pb.Backup, 0)
+		chunk.Backups = make([]*pb.Backup, 0)
 		// get backups' datanode address
 		backups := s.cache.Get(key)
 		if backups == nil || len(backups.Backups) == 0 {
@@ -42,13 +45,15 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		// check is datanode alive
 		for _, b := range backups.Backups {
 			if ok := s.alive.IsAlive(b.Address); ok {
-				chunks[i].Backups = append(chunks[i].Backups, &pb.Backup{Address: b.Address})
+				chunk.Backups = append(chunk.Backups, &pb.Backup{Address: b.Address})
 			}
 		}
-		// it turns out that there is no datanode store this file chunck. file is lost.
-		if chunks[i].Backups == nil || len(chunks[i].Backups) == 0 {
+		// it turns out that there is no datanode store this file chunk. file is lost.
+		if chunk.Backups == nil || len(chunk.Backups) == 0 {
 			return nil, errors.New("file is lost")
 		}
+
+		chunks[i] = chunk
 	}
 
 	res := &pb.GetResponse{

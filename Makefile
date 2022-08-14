@@ -34,7 +34,9 @@ run.client: client.o
 
 port = 50051
 .PYONY: run.namenode
-run.namenode: namenode.o
+run.namenode:
+	@-echo build...
+	@ go build -o namenode.o cmd/namenode/main.go
 	@-echo run namenode...
 # @./namenode --port=${port}
 	@./namenode.o
