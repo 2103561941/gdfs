@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/cyb0225/gdfs/internal/namenode/tree"
 	pb "github.com/cyb0225/gdfs/proto/namenode"
@@ -48,7 +47,7 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 		if err != nil {
 			return nil, err
 		}
-		
+
 		chunk := &pb.Chunk{
 			Backups: adds,
 			FileKey: node.FileKeys[i],
@@ -56,7 +55,7 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 		chunks[i] = chunk
 	}
 
-	res := &pb.PutResponse{Chunks: chunks}	
+	res := &pb.PutResponse{Chunks: chunks}
 
 	return res, nil
 }

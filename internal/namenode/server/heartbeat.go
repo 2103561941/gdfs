@@ -4,7 +4,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )

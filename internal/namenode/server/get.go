@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )
