@@ -8,10 +8,15 @@ client 获取本地文件路径和远程文件路径, 访问namenode 获取datan
 - 目前没有 datanode 支持存储文件. (这个可以返回空的response)
 ---
 
-client 根据本地文件路径打开文件, 与datanode进行远程传输. 将文件分块存储到对应的存储节点上. 
+client 根据本地文件路径打开文件, 与datanode进行远程传输. 将文件分块存储到对应的存储节点上. 在 clinet 往datanode上传输的时候会带上相关backups的地址，client 从 namenode 中返回的节点中顺序去 put，遇到能 put 的节点，把后面剩下没有 put 的 backup 节点一并发给它（datanode），由他来完成下一次传输到其他的datanode节点上。
+
 
 返回错误 datanode
 
 ---
 
 节点在接受成功新的数据后进行文件上报, namenode 将新的文件存储到 cache 中.
+
+
+整体流程图：
+(![put](https://s2.loli.net/2022/08/15/lN9oOtcsJqZubfM.png))

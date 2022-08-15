@@ -2,7 +2,6 @@ package tree
 
 import (
 	"fmt"
-	"math"
 	"sync"
 
 	"github.com/cyb0225/gdfs/internal/pkg/util"
@@ -40,7 +39,7 @@ type Node struct {
 	FileName string
 	FileType int    // directory or normal file
 	FilePath string // filepath contains the filename and its parents' directory
-	FileSize float64
+	FileSize int64
 	FileKeys []string // file keys, it records the chunks' uuid of file
 
 	Children []*Node
@@ -87,8 +86,7 @@ func SetFilePath(filepath string) Option {
 	}
 }
 
-
-func SetFileSize(filesize float64) Option {
+func SetFileSize(filesize int64) Option {
 	return func(node *Node) {
 		node.FileSize = filesize
 	}
@@ -98,10 +96,9 @@ func (n *Node) IsDirectory() bool {
 	return n.FileType == Direcotry
 }
 
-
 // do some checks before append child file.
 // here, I not check the filepath, it will check by tree Put funciton.
-// because, the file's relation belongs to the tree, not a node. 
+// because, the file's relation belongs to the tree, not a node.
 func (n *Node) AppendChild(node *Node) error {
 	if n.FileType != Direcotry {
 		return fmt.Errorf("file: %s is not a directory", n.FilePath)
@@ -128,10 +125,15 @@ func (n *Node) CreateFileKeys() error {
 	}
 
 	//Rounded up
-	size := viper.GetFloat64("chunckSize") 
-	fmt.Println(size)
-	num := int(math.Ceil(n.FileSize / size))
-	fmt.Println("num: ", num)
+	size := viper.GetInt64("chunckSize")
+	// fmt.Println("size: ", size)
+	// fmt.Println("filesize: ", n.FileSize)
+	num := int64(n.FileSize / size)
+	if n.FileSize%size != 0 {
+		num += 1
+	}
+	// fmt.Println("num: ", num)
+
 	n.FileKeys = make([]string, num)
 	for i := 0; i < len(n.FileKeys); i++ {
 		uuid, err := util.GetUUID()

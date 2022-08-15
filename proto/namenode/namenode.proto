@@ -19,7 +19,7 @@ message GetResponse {
 
 message PutRequest {
     string remoteFilePath = 1;
-    double filesize = 2;
+    int64 filesize = 2;
 }
 
 message PutResponse {
@@ -36,11 +36,11 @@ message HeartBeatResponse {
 
 // file chunks(a large file can be split to lots of smaller files)
 message Chunk {
-    repeated Backup backups = 1;
+    repeated string backups = 1;
     string fileKey = 2; // file's name in datanode.
 }
 
 // file backups (a file will be stored in different datanodes)
-message Backup {
-    string address = 1;
-}
+// message Backup {
+    // string address = 1;
+// }

@@ -35,7 +35,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		}
 		chunk.FileKey = key
 
-		chunk.Backups = make([]*pb.Backup, 0)
+		chunk.Backups = make([]string, 0)
 		// get backups' datanode address
 		backups := s.cache.Get(key)
 		if backups == nil || len(backups.Backups) == 0 {
@@ -45,7 +45,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		// check is datanode alive
 		for _, b := range backups.Backups {
 			if ok := s.alive.IsAlive(b.Address); ok {
-				chunk.Backups = append(chunk.Backups, &pb.Backup{Address: b.Address})
+				chunk.Backups = append(chunk.Backups, b.Address)
 			}
 		}
 		// it turns out that there is no datanode store this file chunk. file is lost.

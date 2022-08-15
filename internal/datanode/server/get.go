@@ -15,10 +15,11 @@ func (s *Server) Get(req *pb.GetRequset, stream pb.DataNode_GetServer) error {
 	if err != nil {
 		return fmt.Errorf("cannot open file %s : %w", filename, err)
 	}
+	defer fd.Close()
 	r := bufio.NewReader(fd)
 
+	buf := make([]byte, 1024)
 	for {
-		buf := make([]byte, 1024)
 		n, err := r.Read(buf)
 		if err == io.EOF {
 			break
