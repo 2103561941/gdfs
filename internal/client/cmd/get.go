@@ -1,18 +1,22 @@
 package cmd
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"os"
 
-	pb "github.com/cyb0225/gdfs/proto/namenode"
+	pb2 "github.com/cyb0225/gdfs/proto/datanode"
+	pb1 "github.com/cyb0225/gdfs/proto/namenode"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	addr = "127.0.0.1:50051"
+	namenodeAddr = "127.0.0.1:50051"
 )
 
 var getCmd = &cobra.Command{
@@ -31,7 +35,7 @@ func init() {
 }
 
 func Get(cmd *cobra.Command, args []string) {
-	// localFilePath := args[0] // save remoteFile to this file
+	localFilePath := args[0] // save remoteFile to this file
 	remoteFilePath := args[1]
 
 	res, err := get(remoteFilePath)
@@ -39,23 +43,96 @@ func Get(cmd *cobra.Command, args []string) {
 		log.Fatalf("get datanode information from namenode failed: %s\n", err.Error())
 	}
 
-	fmt.Printf("client get server: %+v", res)
+	// fmt.Printf("client get server: %+v\n", res)
+
+	fd, err := os.OpenFile(localFilePath, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatalf("cannot create file %s: %s", localFilePath, err.Error())
+	}
+	defer fd.Close()
+
+	// read the chunked file and flatten the complete content
+	w := bufio.NewWriter(fd)
+	chunks := res.Chunks
+	for i := 0; i < len(chunks); i++ {
+		filekey := chunks[i].FileKey
+		backups := chunks[i].Backups
+		isError := true
+		for j := 0; j < len(backups); j++ {
+			if err := getdata(filekey, backups[j], w); err != nil {
+				log.Printf("client get file data from datanode %s failed: %s", backups[j], err.Error())
+				continue
+			}
+			isError = false 
+			break
+		}
+		// it means that client cannot get data from any datanode
+		if isError {
+			log.Fatalf("client cannot get file %s from any datanode", filekey)
+		}
+	}
+
+	// Notice, if don't use this funciton, file will not have the data.
+	w.Flush()
+	fmt.Println("get file success!")
 }
 
 // get filepath's datanodes information from namenode
-func get(filepath string) (*pb.GetResponse, error) {
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func get(filepath string) (*pb1.GetResponse, error) {
+	conn, err := grpc.Dial(namenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return nil, fmt.Errorf("connect to namenode[%s] failed: %w", addr, err)
+		return nil, fmt.Errorf("connect to namenode[%s] failed: %w", namenodeAddr, err)
 	}
 
 	defer conn.Close()
 
-	c := pb.NewNameNodeClient(conn)
-	res, err := c.Get(context.Background(), &pb.GetRequest{RemoteFilePath: filepath})
+	c := pb1.NewNameNodeClient(conn)
+	res, err := c.Get(context.Background(), &pb1.GetRequest{RemoteFilePath: filepath})
 	if err != nil {
 		return nil, fmt.Errorf("get datanodes' information failed: %w", err)
 	}
 
 	return res, nil
+}
+
+// read file data from datanode.
+func getdata(filekey string, addr string, w io.Writer) error {
+
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("connect to namenode[%s] failed: %w", addr, err)
+	}
+
+	defer conn.Close()
+
+	c := pb2.NewDataNodeClient(conn)
+	req :=  &pb2.GetRequset{
+		Filekey: filekey,
+	}
+	stream, err := c.Get(context.Background(),req)
+	if err != nil {
+		return fmt.Errorf("get stream from %s failed: %w", addr, err)
+	}
+
+	for {
+		res, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("get file data from %s failed: %w", addr, err)
+		}
+
+		// log.Println(string(res.Databytes))
+
+		if _, err := w.Write(res.Databytes); err != nil {
+			return fmt.Errorf("cannot write databytes to local file: %w", err)
+		}
+	}
+
+	if err := stream.CloseSend(); err != nil {
+		return fmt.Errorf("close send stream failed: %w", err)	
+	}
+
+	return nil
 }

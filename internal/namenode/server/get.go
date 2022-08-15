@@ -11,7 +11,6 @@ import (
 
 // get datanode infomation
 func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
-	log.Println("into Get function")
 
 	filepath := req.RemoteFilePath
 	node := s.tree.Get(filepath)

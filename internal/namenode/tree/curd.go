@@ -2,7 +2,6 @@ package tree
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -48,7 +47,7 @@ func search(patterns []string, node *Node, height int) *Node {
 	}
 
 	// it used to test funciton in crud.
-	log.Printf("node: %#v\n\n", node)
+	// log.Printf("node: %#v\n\n", node)
 
 	if height == len(patterns)-1 {
 		return node

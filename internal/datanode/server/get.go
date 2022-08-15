@@ -10,10 +10,10 @@ import (
 )
 
 func (s *Server) Get(req *pb.GetRequset, stream pb.DataNode_GetServer) error {
-	filename := req.Filename
-	fd, err := os.Open("./storage/tmp")
+	filekey := req.Filekey
+	fd, err := os.Open("./storage/tmp/" + filekey)
 	if err != nil {
-		return fmt.Errorf("cannot open file %s : %w", filename, err)
+		return fmt.Errorf("cannot open file %s : %w", filekey, err)
 	}
 	defer fd.Close()
 	r := bufio.NewReader(fd)
@@ -26,7 +26,7 @@ func (s *Server) Get(req *pb.GetRequset, stream pb.DataNode_GetServer) error {
 		}
 		
 		if err != nil {
-			return fmt.Errorf("read file %s failed: %w", filename, err)
+			return fmt.Errorf("read file %s failed: %w", filekey, err)
 		}
 
 		if err := stream.Send(&pb.GetResponse{
@@ -35,5 +35,6 @@ func (s *Server) Get(req *pb.GetRequset, stream pb.DataNode_GetServer) error {
 			return fmt.Errorf("send databytes failed: %w", err)
 		}
 	}
+
 	return nil
 }

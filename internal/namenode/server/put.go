@@ -22,7 +22,6 @@ import (
 
 // get datanode infomation
 func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, error) {
-	log.Println("into Put function")
 
 	filepath := req.RemoteFilePath
 	filesize := req.Filesize

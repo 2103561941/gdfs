@@ -11,7 +11,7 @@ import (
 
 func (s *Server) HeartBeat(ctx context.Context, req *pb.HeartBeatRequset) (*pb.HeartBeatResponse, error) {
 	address := req.Addr
-	fmt.Println(address)
+	// fmt.Println(address)
 
 	s.alive.Update(address)
 	s.alive.IsAlive(address)

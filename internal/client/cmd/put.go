@@ -56,22 +56,27 @@ func Put(cmd *cobra.Command, args []string) {
 	for i := 0; i < len(res.Chunks); i++ {
 		filekey := res.Chunks[i].FileKey
 		backups := res.Chunks[i].Backups
+		isError := true
 		for j := 0; j < len(backups); j++ {
 			if err := putdata(filekey, r, backups[j:]); err != nil {
 				log.Printf("put file %s to datanode failed: %s\n", filekey, err.Error())
 				continue
 			}
 			// put to datanode success. then put the next chunk
+			isError = false
 			break
 		}
+		if isError {
+			log.Fatalf("client cannot put file %s toany datanode", filekey)
+		}
 	}
-	log.Println("put file success")
+	log.Println("put file success!")
 	// fmt.Printf("client get server: %+v", res)
 }
 
 // get datanode information from namenode
 func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(namenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("connect to server failed: %w", err)
 	}
@@ -84,14 +89,12 @@ func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
 	}
 	res, err := c.Put(context.Background(), req)
 	if err != nil {
-		return nil, fmt.Errorf("get from %s server failed: %w", addr, err)
+		return nil, fmt.Errorf("get from %s server failed: %w", namenodeAddr, err)
 	}
 
 	return res, nil
 }
 
-
-func Putdata()
 
 // put data to datanode
 // add[0] stored the address which will be visited, and adds[1:] stored the other backups' address.
