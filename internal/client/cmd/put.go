@@ -44,24 +44,29 @@ func Put(cmd *cobra.Command, args []string) {
 	}
 	// get bytes, should transform to KB
 	filesize := (fileinfo.Size())
-	fmt.Println("filesize: ", filesize)
+	// fmt.Println("filesize: ", filesize)
 
 	res, err := put(remoteFilePath, filesize)
 	if err != nil {
 		log.Fatalf("get datanode information from namenode failed: %s\n", err.Error())
 	}
 
+	// put file data to datanodes
 	r := bufio.NewReader(fd)
-
 	for i := 0; i < len(res.Chunks); i++ {
 		filename := res.Chunks[i].FileKey
 		backups := res.Chunks[i].Backups
-		if err := putdata(filename, r, backups); err != nil {
-			log.Fatalf("put file %s to datanode failed: %s\n", filename, err.Error())
+		for j := 0; j < len(backups); j++ {
+			if err := putdata(filename, r, backups[j:]); err != nil {
+				log.Printf("put file %s to datanode failed: %s\n", filename, err.Error())
+				continue
+			}
+			// put to datanode success. then put the next chunk
+			break
 		}
 	}
-
-	fmt.Printf("client get server: %+v", res)
+	log.Println("put file success")
+	// fmt.Printf("client get server: %+v", res)
 }
 
 // get datanode information from namenode
@@ -86,71 +91,55 @@ func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
 }
 
 // put data to datanode
+// add[0] stored the address which will be visited, and adds[1:] stored the other backups' address.
 func putdata(filename string, r io.Reader, adds []string) error {
 
 	// if put one datanode failed, then try to put to next backups.
 	// at the same time
-	hasError := true
-	for i := 0; i < len(adds); i++ {
-		address := adds[i]
+	address := adds[0]
 
-		conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			// return fmt.Errorf("connect to server failed: %w", err)
-			log.Printf("connect to server failed: %s\n", err.Error())
-			conn.Close()
-			continue
-		}
-		
-		c := pb2.NewDataNodeClient(conn)
-		stream, err := c.Put(context.Background())
-		if err != nil {
-			// return fmt.Errorf("get stream failed: %w", err)
-			log.Printf("get stream failed: %s\n", err.Error())
-			conn.Close()
-			continue
-		}
-			
-		// send basic information to datanode.
-		if err := stream.Send(&pb2.PutRequest{Filename: filename, Adds: adds[i + 1:]}); err != nil {
-			log.Printf("send basic information to datanode %s failed: %s\n", address, err.Error())
-			conn.Close()
-			continue
-		} 
-		buf := make([]byte, 1024)
-		sum := 0 // stored the bytes that read. 
-		for {
-			n, err := r.Read(buf)
-			if err == io.EOF {
-				// size of buf is 0
-				break
-			}
-			if err != nil {
-				log.Printf("read filebytes from file %s failed: %s\n", filename, err.Error() )
-				conn.Close()
-				continue
-			}
-
-			sum += n
-			if sum >= 1024 * 1024 { // every chunk's size
-				break
-			}
-
-			if err := stream.Send(&pb2.PutRequest{Databytes: buf[:n]}); err != nil {
-				log.Printf("send basic information to datanode %s failed: %s\n", address, err.Error())
-				conn.Close()
-				continue
-				
-			}
-
-		}
-			
-		conn.Close()
-		hasError = false // it truns out that put have successd at least once
-		break
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("connect to server failed: %w", err)
 	}
-	if hasError {
-		return fmt.Errorf("cannot put file to any datanode")
+	defer conn.Close()
+
+	c := pb2.NewDataNodeClient(conn)
+	stream, err := c.Put(context.Background())
+	if err != nil {
+		return fmt.Errorf("get stream failed: %w", err)
+	}
+
+	// send basic information to datanode.
+	if err := stream.Send(&pb2.PutRequest{Filename: filename, Adds: adds[1:]}); err != nil {
+		return fmt.Errorf("send basic information to datanode %s failed: %w", address, err)
+	}
+
+	buf := make([]byte, 1024) //chunk size can divide it.   chunksize mod bufsize = 0
+	sum := 0                  // stored the bytes that read.
+	for {
+		n, err := r.Read(buf)
+		if err == io.EOF {
+			// size of buf is 0
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("read filebytes from file %s failed: %w", filename, err)
+		}
+
+		sum += n
+		if sum >= 1024*1024 { // every chunk's size
+			break
+		}
+
+		// fmt.Println("send buf: ", string(buf))
+		if err := stream.Send(&pb2.PutRequest{Databytes: buf[:n]}); err != nil {
+			return fmt.Errorf("send basic information to datanode %s failed: %w", address, err)
+		}
+	}
+
+	if _, err = stream.CloseAndRecv(); err != nil {
+		return fmt.Errorf("close client stream failed: %w", err)
 	}
 
 	return nil

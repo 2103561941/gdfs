@@ -17,7 +17,7 @@ func (s *Server) Put(stream pb.DataNode_PutServer) error {
 		return err
 	}
 	filename := res.Filename
-	fd, err := os.OpenFile("./storage/tmp"+filename, os.O_CREATE|os.O_RDWR, 0600)
+	fd, err := os.OpenFile("./storage/tmp/"+filename, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return fmt.Errorf("cannot create file %s: %w", filename, err)
 	}
