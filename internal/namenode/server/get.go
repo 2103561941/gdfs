@@ -12,7 +12,7 @@ import (
 // get datanode infomation
 func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
 	log.Println("into Get function")
-	
+
 	filepath := req.RemoteFilePath
 	node := s.tree.Get(filepath)
 	if node == nil {
@@ -43,9 +43,9 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		}
 
 		// check is datanode alive
-		for _, b := range backups.Backups {
-			if ok := s.alive.IsAlive(b.Address); ok {
-				chunk.Backups = append(chunk.Backups, b.Address)
+		for _, address := range backups.Backups {
+			if ok := s.alive.IsAlive(address); ok {
+				chunk.Backups = append(chunk.Backups, address)
 			}
 		}
 		// it turns out that there is no datanode store this file chunk. file is lost.

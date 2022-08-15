@@ -25,6 +25,7 @@ type NameNodeClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error)
 	HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error)
+	FileReport(ctx context.Context, in *FileReportRequest, opts ...grpc.CallOption) (*FileReportRequest, error)
 }
 
 type nameNodeClient struct {
@@ -62,6 +63,15 @@ func (c *nameNodeClient) HeartBeat(ctx context.Context, in *HeartBeatRequset, op
 	return out, nil
 }
 
+func (c *nameNodeClient) FileReport(ctx context.Context, in *FileReportRequest, opts ...grpc.CallOption) (*FileReportRequest, error) {
+	out := new(FileReportRequest)
+	err := c.cc.Invoke(ctx, "/namenode_proto.NameNode/FileReport", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NameNodeServer is the server API for NameNode service.
 // All implementations must embed UnimplementedNameNodeServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type NameNodeServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Put(context.Context, *PutRequest) (*PutResponse, error)
 	HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error)
+	FileReport(context.Context, *FileReportRequest) (*FileReportRequest, error)
 	mustEmbedUnimplementedNameNodeServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedNameNodeServer) Put(context.Context, *PutRequest) (*PutRespon
 }
 func (UnimplementedNameNodeServer) HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HeartBeat not implemented")
+}
+func (UnimplementedNameNodeServer) FileReport(context.Context, *FileReportRequest) (*FileReportRequest, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileReport not implemented")
 }
 func (UnimplementedNameNodeServer) mustEmbedUnimplementedNameNodeServer() {}
 
@@ -152,6 +166,24 @@ func _NameNode_HeartBeat_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NameNode_FileReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NameNodeServer).FileReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/namenode_proto.NameNode/FileReport",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NameNodeServer).FileReport(ctx, req.(*FileReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NameNode_ServiceDesc is the grpc.ServiceDesc for NameNode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var NameNode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "HeartBeat",
 			Handler:    _NameNode_HeartBeat_Handler,
+		},
+		{
+			MethodName: "FileReport",
+			Handler:    _NameNode_FileReport_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

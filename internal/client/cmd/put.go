@@ -54,11 +54,11 @@ func Put(cmd *cobra.Command, args []string) {
 	// put file data to datanodes
 	r := bufio.NewReader(fd)
 	for i := 0; i < len(res.Chunks); i++ {
-		filename := res.Chunks[i].FileKey
+		filekey := res.Chunks[i].FileKey
 		backups := res.Chunks[i].Backups
 		for j := 0; j < len(backups); j++ {
-			if err := putdata(filename, r, backups[j:]); err != nil {
-				log.Printf("put file %s to datanode failed: %s\n", filename, err.Error())
+			if err := putdata(filekey, r, backups[j:]); err != nil {
+				log.Printf("put file %s to datanode failed: %s\n", filekey, err.Error())
 				continue
 			}
 			// put to datanode success. then put the next chunk
@@ -90,9 +90,12 @@ func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
 	return res, nil
 }
 
+
+func Putdata()
+
 // put data to datanode
 // add[0] stored the address which will be visited, and adds[1:] stored the other backups' address.
-func putdata(filename string, r io.Reader, adds []string) error {
+func putdata(filekey string, r io.Reader, adds []string) error {
 
 	// if put one datanode failed, then try to put to next backups.
 	// at the same time
@@ -111,7 +114,7 @@ func putdata(filename string, r io.Reader, adds []string) error {
 	}
 
 	// send basic information to datanode.
-	if err := stream.Send(&pb2.PutRequest{Filename: filename, Adds: adds[1:]}); err != nil {
+	if err := stream.Send(&pb2.PutRequest{Filekey: filekey, Adds: adds[1:]}); err != nil {
 		return fmt.Errorf("send basic information to datanode %s failed: %w", address, err)
 	}
 
@@ -124,7 +127,7 @@ func putdata(filename string, r io.Reader, adds []string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("read filebytes from file %s failed: %w", filename, err)
+			return fmt.Errorf("read filebytes from file %s failed: %w", filekey, err)
 		}
 
 		sum += n

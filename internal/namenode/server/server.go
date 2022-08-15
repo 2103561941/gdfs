@@ -15,14 +15,14 @@ var _ pb.NameNodeServer = (*Server)(nil)
 
 type Server struct {
 	pb.UnimplementedNameNodeServer
-	tree *tree.Tree
+	tree  *tree.Tree
 	cache *cache.Cache
 	alive *alive.Alive
 }
 
 func newServer() *Server {
 	return &Server{
-		tree: tree.NewTree(),
+		tree:  tree.NewTree(),
 		cache: cache.NewCache(),
 		alive: alive.NewAlive(),
 	}

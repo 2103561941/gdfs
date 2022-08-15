@@ -7,6 +7,7 @@ service NameNode {
     rpc Put(PutRequest)returns(PutResponse){}
 
     rpc HeartBeat(HeartBeatRequset)returns(HeartBeatResponse){}
+    rpc FileReport(FileReportRequest)returns(FileReportRequest){}
 }
 
 message GetRequest {
@@ -27,11 +28,18 @@ message PutResponse {
 }
 
 message HeartBeatRequset {
-    string address = 1;
+    string addr = 1;
 }
 
-message HeartBeatResponse {
-    int64 ack = 1;
+message HeartBeatResponse {}
+
+message FileReportRequest {
+    string filekey = 1;
+    string addr = 2;
+}
+
+message FileReportResponse {
+    
 }
 
 // file chunks(a large file can be split to lots of smaller files)
@@ -39,8 +47,3 @@ message Chunk {
     repeated string backups = 1;
     string fileKey = 2; // file's name in datanode.
 }
-
-// file backups (a file will be stored in different datanodes)
-// message Backup {
-    // string address = 1;
-// }

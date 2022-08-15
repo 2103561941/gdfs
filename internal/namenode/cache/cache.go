@@ -17,16 +17,11 @@ func NewCache() *Cache {
 
 // datanode infomation
 type Node struct {
-	Backups []*Backup
+	Backups []string
 }
 
 func NewNode() *Node {
 	return &Node{
-		Backups: make([]*Backup, 0),
+		Backups: make([]string, 0),
 	}
-}
-
-// file backups, stroed the message of datanode
-type Backup struct {
-	Address string // ip + port
 }
