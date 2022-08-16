@@ -1,5 +1,10 @@
 bin
 *.o
 
+.vscode
+.idea
+
 storage/*
 test/*
+
+*.log

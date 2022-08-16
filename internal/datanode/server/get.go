@@ -6,12 +6,13 @@ import (
 	"io"
 	"os"
 
+	"github.com/cyb0225/gdfs/internal/datanode/config"
 	pb "github.com/cyb0225/gdfs/proto/datanode"
 )
 
 func (s *Server) Get(req *pb.GetRequset, stream pb.DataNode_GetServer) error {
 	filekey := req.Filekey
-	fd, err := os.Open("./storage/tmp/" + filekey)
+	fd, err := os.Open(config.Cfg.StoragePath + filekey)
 	if err != nil {
 		return fmt.Errorf("cannot open file %s : %w", filekey, err)
 	}

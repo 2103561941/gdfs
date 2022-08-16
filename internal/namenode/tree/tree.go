@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/cyb0225/gdfs/internal/namenode/config"
 	"github.com/cyb0225/gdfs/internal/pkg/util"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -125,14 +125,11 @@ func (n *Node) CreateFileKeys() error {
 	}
 
 	//Rounded up
-	size := viper.GetInt64("chunckSize")
-	// fmt.Println("size: ", size)
-	// fmt.Println("filesize: ", n.FileSize)
+	size := config.Cfg.ChunkSize
 	num := int64(n.FileSize / size)
 	if n.FileSize%size != 0 {
 		num += 1
 	}
-	// fmt.Println("num: ", num)
 
 	n.FileKeys = make([]string, num)
 	for i := 0; i < len(n.FileKeys); i++ {

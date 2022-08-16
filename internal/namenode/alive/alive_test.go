@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 )
-
+var timeout = 3 * time.Second
 func TestAlive(t *testing.T) {
 	key := "hello"
 	a := NewAlive()

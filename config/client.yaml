@@ -1,14 +1,9 @@
 Log:
   Module: debug  #it can input debug, info(release)
-  LogPath: ./storage/log/datanode/
+  LogPath: ./storage/log/client/
   MaxSize:   1  #MB
   MaxBackups: 3
   MaxAge: 3  #day
 
 NamenodeAddr: 127.0.0.1:50051
-
-Address:
-  IP: 127.0.0.1
-  Port: 50052
-
-StoragePath: ./storage/data/
+ChunkSize:  1048576 #1024*1024, 1MB, file chunk

@@ -5,9 +5,10 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
+	"github.com/cyb0225/gdfs/internal/client/config"
+	"github.com/cyb0225/gdfs/pkg/log"
 	pb2 "github.com/cyb0225/gdfs/proto/datanode"
 	pb1 "github.com/cyb0225/gdfs/proto/namenode"
 	"github.com/spf13/cobra"
@@ -15,9 +16,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var (
-	namenodeAddr = "127.0.0.1:50051"
-)
 
 var getCmd = &cobra.Command{
 	Use:   "get",
@@ -40,14 +38,12 @@ func Get(cmd *cobra.Command, args []string) {
 
 	res, err := get(remoteFilePath)
 	if err != nil {
-		log.Fatalf("get datanode information from namenode failed: %s\n", err.Error())
+		log.Fatal("connect to namenode failed", log.Err(err))
 	}
-
-	// fmt.Printf("client get server: %+v\n", res)
 
 	fd, err := os.OpenFile(localFilePath, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		log.Fatalf("cannot create file %s: %s", localFilePath, err.Error())
+		log.Fatal("create file failed", log.String("file", localFilePath), log.Err(err))
 	}
 	defer fd.Close()
 
@@ -60,28 +56,28 @@ func Get(cmd *cobra.Command, args []string) {
 		isError := true
 		for j := 0; j < len(backups); j++ {
 			if err := getdata(filekey, backups[j], w); err != nil {
-				log.Printf("client get file data from datanode %s failed: %s", backups[j], err.Error())
+				log.Error("client get file failed", log.String("datanod", backups[j]), log.Err(err))
 				continue
 			}
-			isError = false 
+			isError = false
 			break
 		}
 		// it means that client cannot get data from any datanode
 		if isError {
-			log.Fatalf("client cannot get file %s from any datanode", filekey)
+			log.Fatalf("get file failed from any datanode", log.String("filekey", filekey))
 		}
 	}
 
 	// Notice, if don't use this funciton, file will not have the data.
 	w.Flush()
-	fmt.Println("get file success!")
+	log.Info("get file success!")
 }
 
 // get filepath's datanodes information from namenode
 func get(filepath string) (*pb1.GetResponse, error) {
-	conn, err := grpc.Dial(namenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return nil, fmt.Errorf("connect to namenode[%s] failed: %w", namenodeAddr, err)
+		return nil, err
 	}
 
 	defer conn.Close()
@@ -89,9 +85,8 @@ func get(filepath string) (*pb1.GetResponse, error) {
 	c := pb1.NewNameNodeClient(conn)
 	res, err := c.Get(context.Background(), &pb1.GetRequest{RemoteFilePath: filepath})
 	if err != nil {
-		return nil, fmt.Errorf("get datanodes' information failed: %w", err)
+		return nil, fmt.Errorf("cannot get from namenode: %w", err)
 	}
-
 	return res, nil
 }
 
@@ -100,16 +95,16 @@ func getdata(filekey string, addr string, w io.Writer) error {
 
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return fmt.Errorf("connect to namenode[%s] failed: %w", addr, err)
+		return fmt.Errorf("connect to namenode failed: %w", err)
 	}
 
 	defer conn.Close()
 
 	c := pb2.NewDataNodeClient(conn)
-	req :=  &pb2.GetRequset{
+	req := &pb2.GetRequset{
 		Filekey: filekey,
 	}
-	stream, err := c.Get(context.Background(),req)
+	stream, err := c.Get(context.Background(), req)
 	if err != nil {
 		return fmt.Errorf("get stream from %s failed: %w", addr, err)
 	}
@@ -126,12 +121,12 @@ func getdata(filekey string, addr string, w io.Writer) error {
 		// log.Println(string(res.Databytes))
 
 		if _, err := w.Write(res.Databytes); err != nil {
-			return fmt.Errorf("cannot write databytes to local file: %w", err)
+			return fmt.Errorf("write to local file failed: %w", err)
 		}
 	}
 
 	if err := stream.CloseSend(); err != nil {
-		return fmt.Errorf("close send stream failed: %w", err)	
+		return fmt.Errorf("close send stream failed: %w", err)
 	}
 
 	return nil

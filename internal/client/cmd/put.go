@@ -5,9 +5,10 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
+	"github.com/cyb0225/gdfs/internal/client/config"
+	"github.com/cyb0225/gdfs/pkg/log"
 	pb2 "github.com/cyb0225/gdfs/proto/datanode"
 	pb1 "github.com/cyb0225/gdfs/proto/namenode"
 	"github.com/spf13/cobra"
@@ -34,21 +35,20 @@ func Put(cmd *cobra.Command, args []string) {
 
 	fd, err := os.Open(localFilePath)
 	if err != nil {
-		log.Fatalf("failed to open file: %s: %s\n", localFilePath, err.Error())
+		log.Fatal("failed to open file", log.String("file", localFilePath), log.Err(err))
 	}
 	defer fd.Close()
 
 	fileinfo, err := fd.Stat()
 	if err != nil {
-		log.Fatalf("failed to get file: %s stat: %s\n", localFilePath, err.Error())
+		log.Fatal("get file stat failed", log.String("file", localFilePath), log.Err(err))
 	}
 	// get bytes, should transform to KB
 	filesize := (fileinfo.Size())
-	// fmt.Println("filesize: ", filesize)
 
 	res, err := put(remoteFilePath, filesize)
 	if err != nil {
-		log.Fatalf("get datanode information from namenode failed: %s\n", err.Error())
+		log.Fatal("connect to namenode failed", log.String("namenode", config.Cfg.NamenodeAddr) ,log.Err(err))
 	}
 
 	// put file data to datanodes
@@ -59,7 +59,7 @@ func Put(cmd *cobra.Command, args []string) {
 		isError := true
 		for j := 0; j < len(backups); j++ {
 			if err := putdata(filekey, r, backups[j:]); err != nil {
-				log.Printf("put file %s to datanode failed: %s\n", filekey, err.Error())
+				log.Error("put file to datanode failed", log.String("datanode", backups[j]), log.String("filekey", filekey), log.Err(err))
 				continue
 			}
 			// put to datanode success. then put the next chunk
@@ -67,18 +67,17 @@ func Put(cmd *cobra.Command, args []string) {
 			break
 		}
 		if isError {
-			log.Fatalf("client cannot put file %s toany datanode", filekey)
+			log.Fatalf("put file to any datanode failed", log.String("filekey", filekey))
 		}
 	}
-	log.Println("put file success!")
-	// fmt.Printf("client get server: %+v", res)
+	log.Info("put file success!")
 }
 
 // get datanode information from namenode
 func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
-	conn, err := grpc.Dial(namenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return nil, fmt.Errorf("connect to server failed: %w", err)
+		return nil, err
 	}
 	defer conn.Close()
 
@@ -89,12 +88,11 @@ func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
 	}
 	res, err := c.Put(context.Background(), req)
 	if err != nil {
-		return nil, fmt.Errorf("get from %s server failed: %w", namenodeAddr, err)
+		return nil, fmt.Errorf("get from [%s] server failed: %w", config.Cfg.NamenodeAddr, err)
 	}
 
 	return res, nil
 }
-
 
 // put data to datanode
 // add[0] stored the address which will be visited, and adds[1:] stored the other backups' address.
@@ -118,7 +116,7 @@ func putdata(filekey string, r io.Reader, adds []string) error {
 
 	// send basic information to datanode.
 	if err := stream.Send(&pb2.PutRequest{Filekey: filekey, Adds: adds[1:]}); err != nil {
-		return fmt.Errorf("send basic information to datanode %s failed: %w", address, err)
+		return fmt.Errorf("send filestat to datanode failed: %w", err)
 	}
 
 	buf := make([]byte, 1024) //chunk size can divide it.   chunksize mod bufsize = 0
@@ -130,17 +128,16 @@ func putdata(filekey string, r io.Reader, adds []string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("read filebytes from file %s failed: %w", filekey, err)
+			return fmt.Errorf("read file %s failed: %w", filekey, err)
 		}
 
 		sum += n
-		if sum >= 1024*1024 { // every chunk's size
+		if sum >= int(config.Cfg.ChunkSize) { // every chunk's size
 			break
 		}
 
-		// fmt.Println("send buf: ", string(buf))
 		if err := stream.Send(&pb2.PutRequest{Databytes: buf[:n]}); err != nil {
-			return fmt.Errorf("send basic information to datanode %s failed: %w", address, err)
+			return fmt.Errorf("send filestat to datanode failed: %w", err)
 		}
 	}
 

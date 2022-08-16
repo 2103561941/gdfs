@@ -2,9 +2,7 @@
 
 package cmd
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // check args length
 func equalNumArgs(n int, args []string) error {

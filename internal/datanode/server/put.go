@@ -5,15 +5,24 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
+	"github.com/cyb0225/gdfs/internal/datanode/config"
+	"github.com/cyb0225/gdfs/pkg/log"
 	pb "github.com/cyb0225/gdfs/proto/datanode"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 func (s *Server) Put(stream pb.DataNode_PutServer) error {
+
+	// it promises that file descriptor must closed more early than groutine putdata.
+	// because, put data needs to open file, so the file descriptor should be closed before groutine opened it.
+	// and defer is a stack, so fd.Close() is execute before "ch <- 1".Then putdata groutine.
+	ch := make(chan int)
+	defer func ()  {
+		ch <- 1	
+	}()
 
 	// get filename, open/create file
 	res, err := stream.Recv()
@@ -23,7 +32,7 @@ func (s *Server) Put(stream pb.DataNode_PutServer) error {
 	filekey := res.Filekey
 	adds := res.Adds
 
-	fd, err := os.OpenFile("./storage/tmp/"+filekey, os.O_CREATE|os.O_WRONLY, 0666)
+	fd, err := os.OpenFile(config.Cfg.StoragePath+filekey, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return fmt.Errorf("cannot create file %s: %w", filekey, err)
 	}
@@ -47,40 +56,44 @@ func (s *Server) Put(stream pb.DataNode_PutServer) error {
 		}
 	}
 
-	// report to namenode.
-	go func ()  {
+	go func() {
 		if err := s.report.FileReport(filekey); err != nil {
-			log.Println("report filekey to namenode failed: %w", filekey)
-		}		
+			log.Error("report filekey to namenode failed", log.String("filekey", filekey), log.Err(err))
+		}
 	}()
 
+	// sync put data to other datanodes.
 	if len(adds) == 0 {
 		return stream.SendAndClose(&pb.PutResponse{})
 	}
 
-	// asynchronous process
-	// write to another datanodes.
-	go func ()  {
-		fd, err := os.Open(filekey)
+	
+	// report to namenode.
+	go func() {
+		<- ch
+		 
+		fd, err := os.Open(config.Cfg.StoragePath + filekey)
 		if err != nil {
-			log.Printf("open file %s failed: %s", filekey, err.Error())
+			log.Error("open file failed", log.String("filekey", filekey), log.Err(err))
 			return
 		}
 		defer fd.Close()
 		r := bufio.NewReader(fd)
 
 		for i := 0; i < len(adds); i++ {
-			if err := putdata(filekey, r, adds[1:]); err != nil {
-				log.Printf("put file %s to datanode failed: %s\n", filekey, err.Error())
+			if err := putdata(filekey, r, adds[i:]); err != nil {
+				log.Error("put file to datanode failed", log.String("datanode", adds[i]), log.String("filekey", filekey), log.Err(err))
 				continue
 			}
 			break
 		}
-		
 	}()
 
+	if err := stream.SendAndClose(&pb.PutResponse{}); err != nil {
+		return err
+	}
 
-	return stream.SendAndClose(&pb.PutResponse{})
+	return nil
 }
 
 // put data to datanode
@@ -105,7 +118,7 @@ func putdata(filekey string, r io.Reader, adds []string) error {
 
 	// send basic information to datanode.
 	if err := stream.Send(&pb.PutRequest{Filekey: filekey, Adds: adds[1:]}); err != nil {
-		return fmt.Errorf("send basic information to datanode %s failed: %w", address, err)
+		return fmt.Errorf("send basic information to datanode failed: %w", err)
 	}
 
 	buf := make([]byte, 1024) //chunk size can divide it.   chunksize mod bufsize = 0
@@ -116,12 +129,11 @@ func putdata(filekey string, r io.Reader, adds []string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("read filebytes from file %s failed: %w", filekey, err)
+			return fmt.Errorf("read file failed: %w", err)
 		}
 
-		// fmt.Println("send buf: ", string(buf))
 		if err := stream.Send(&pb.PutRequest{Databytes: buf[:n]}); err != nil {
-			return fmt.Errorf("send basic information to datanode %s failed: %w", address, err)
+			return fmt.Errorf("send filestat to datanode failed: %w", err)
 		}
 	}
 

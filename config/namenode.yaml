@@ -1,0 +1,14 @@
+Log:
+  Module: debug  #it can input debug, info(release)
+  LogPath: ./storage/log/namenode/
+  MaxSize:   1  #MB
+  MaxBackups: 3
+  MaxAge: 3  #day
+
+Address:
+  IP: 127.0.0.1
+  Port: 50051
+
+Timeout: 50 # second, datanode heartbeatExpiredTime
+BackupN: 3  # the num of file chunk backup
+ChunkSize:  1048576 #1024*1024, 1MB, file chunk

@@ -3,18 +3,18 @@ package report
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
+	"github.com/cyb0225/gdfs/internal/datanode/config"
+	"github.com/cyb0225/gdfs/pkg/log"
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	namenodeAddr = "127.0.0.1:50051"
-	addr         = "127.0.0.1:50052"
+	
 )
 
 type Report struct{}
@@ -24,11 +24,11 @@ func NewReport() *Report {
 }
 
 func (r *Report) HeartBeat() {
-	fmt.Println("start heartbeat...")
+	log.Info("start heartbeat")
 	for {
 		if err := heartbeat(); err != nil {
 			// namenode may closed, in this way, datanode can choose another namenode.
-			log.Printf("cannot connect to namenode: %s, please have a check: %s\n", namenodeAddr, err.Error())
+			log.Fatal("cannot connect to namenode", log.String("namenode", config.Cfg.NamenodeAddr), log.Err(err))
 			os.Exit(1)
 		}
 
@@ -37,13 +37,14 @@ func (r *Report) HeartBeat() {
 }
 
 func heartbeat() error {
-	conn, err := grpc.Dial(namenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return fmt.Errorf("connect to namenode[%s] failed: %w", namenodeAddr, err)
+		return err
 	}
 
 	defer conn.Close()
-
+	
+	addr := config.Cfg.Addr.IP + ":" + config.Cfg.Addr.Port
 	c := pb.NewNameNodeClient(conn)
 	if _, err := c.HeartBeat(context.Background(), &pb.HeartBeatRequset{Addr: addr}); err != nil {
 		return fmt.Errorf("get namenode' heartbeat failed: %w", err)
@@ -54,13 +55,15 @@ func heartbeat() error {
 
 // report file to namenode cache
 func (r *Report) FileReport(filekey string) error {
-	conn, err := grpc.Dial(namenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return fmt.Errorf("connect to namenode[%s] failed: %w", namenodeAddr, err)
+		return fmt.Errorf("connect to namenode[%s] failed: %w", config.Cfg.NamenodeAddr, err)
 	}
 
 	defer conn.Close()
 
+
+	addr := config.Cfg.Addr.IP + ":" + config.Cfg.Addr.Port
 	c := pb.NewNameNodeClient(conn)
 	req := &pb.FileReportRequest{
 		Filekey: filekey,
@@ -69,5 +72,24 @@ func (r *Report) FileReport(filekey string) error {
 	if _, err := c.FileReport(context.Background(), req); err != nil {
 		return fmt.Errorf("get namenode' filereport failed: %w", err)
 	}
+	return nil
+}
+
+// Restart file reporting
+// tell namenode, datanode stored files.
+func (r *Report) RestartFileReport() error {
+	fileInfos, err := os.ReadDir(config.Cfg.StoragePath)
+	if err != nil {
+		return fmt.Errorf("open directory failed: %w", err)
+	}
+
+	for _, file := range fileInfos {
+		if err := r.FileReport(file.Name()); err != nil {
+ 			return err
+		}
+	}
+
+	log.Info("restart file report success")
+
 	return nil
 }

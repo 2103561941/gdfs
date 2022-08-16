@@ -7,11 +7,8 @@ import (
 	"math/rand"
 	"sync"
 	"time"
-)
 
-var (
-	timeout     = time.Second * 50 //
-	backupN int = 3 // it is longer than datanode heartbeat time
+	"github.com/cyb0225/gdfs/internal/namenode/config"
 )
 
 // record alived datanode
@@ -63,6 +60,7 @@ func (a *Alive) IsAlive(key string) bool {
 	}
 
 	expireTime := time.Since(t)
+	timeout := time.Duration(config.Cfg.Timeout) * time.Second
 	return expireTime <= timeout
 }
 
@@ -80,8 +78,8 @@ func (a *Alive) Backup() ([]string, error) {
 	startIndex := rand.Intn(length) // return [0, len)
 
 	var n int
-	if backupN < length {
-		n = backupN
+	if config.Cfg.BackupN < length {
+		n = config.Cfg.BackupN
 	} else {
 		n = length
 	}

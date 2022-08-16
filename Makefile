@@ -26,25 +26,29 @@ gen.proto:
 
 
 ## start rpc server
-.PYONY: run.client
-run.client: client.o
+.PYONY: build.client
+build.client: client.o
 	@ go build -o client.o cmd/client/main.go
 # @./client.o
 
 
 port = 50051
-.PYONY: run.namenode
-run.namenode:
+.PYONY: build.namenode
+build.namenode:
 	@ go build -o namenode.o cmd/namenode/main.go
-	@./namenode.o
 
 
-.PYONY: run.datanode
-run.datanode: datanode.o
+.PYONY: build.datanode
+build.datanode: datanode.o
 	@ go build -o datanode.o cmd/datanode/main.go
-	@./datanode.o
 
 
+.PYONY: datanode.cluster
+datanode.cluster: datanode.o
+	@ make clean.logs
+	@ go build -o datanode.o cmd/datanode/main.go
+	@./datanode.o -p=5000 &
+	@./datanode.o -p=5001 &
 
 
 ###  =================================== Build File ==================================================
@@ -75,3 +79,7 @@ clean:
 	@-echo start clean...
 	@rm -rf *.o
 	@-echo clean over!
+
+.PYONY: clean.logs
+clean.logs:
+	@rm -r storage/log/*/*.log

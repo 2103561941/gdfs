@@ -6,6 +6,7 @@ import (
 
 	"github.com/cyb0225/gdfs/internal/namenode/alive"
 	"github.com/cyb0225/gdfs/internal/namenode/cache"
+	"github.com/cyb0225/gdfs/internal/namenode/config"
 	"github.com/cyb0225/gdfs/internal/namenode/tree"
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 	"google.golang.org/grpc"
@@ -29,8 +30,8 @@ func newServer() *Server {
 }
 
 // start rpc server
-func RunServer(port string) error {
-	lis, err := net.Listen("tcp", ":"+port)
+func RunServer() error {
+	lis, err := net.Listen("tcp", ":" + config.Cfg.Addr.Port)
 	if err != nil {
 		return err
 	}
@@ -38,7 +39,7 @@ func RunServer(port string) error {
 	s := grpc.NewServer()
 	pb.RegisterNameNodeServer(s, newServer())
 
-	log.Printf("server start listening at %s", port)
+	log.Printf("server start listening at %s", config.Cfg.Addr.Port)
 	if err = s.Serve(lis); err != nil {
 		return err
 	}

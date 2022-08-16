@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	pb "github.com/cyb0225/gdfs/proto/namenode"
@@ -37,7 +36,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		// get backups' datanode address
 		backups := s.cache.Get(key)
 		if backups == nil || len(backups.Backups) == 0 {
-			return nil, errors.New("file is not exist")
+			return nil, fmt.Errorf("file is not exist")
 		}
 
 		// check is datanode alive
@@ -48,7 +47,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		}
 		// it turns out that there is no datanode store this file chunk. file is lost.
 		if chunk.Backups == nil || len(chunk.Backups) == 0 {
-			return nil, errors.New("file is lost")
+			return nil, fmt.Errorf("file is lost")
 		}
 
 		chunks[i] = chunk

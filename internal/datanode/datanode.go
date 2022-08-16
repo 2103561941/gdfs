@@ -3,16 +3,20 @@ package datanode
 import (
 	"log"
 
+	"github.com/cyb0225/gdfs/internal/datanode/config"
 	"github.com/cyb0225/gdfs/internal/datanode/server"
-	"github.com/spf13/viper"
+	logger "github.com/cyb0225/gdfs/internal/pkg/log"
 )
 
 // load config file and start rpc server
 func Run() {
-	port := viper.GetString("port")
-
-	if err := server.RunServer(port); err != nil {
-		log.Fatal("start rpc server failed: ", err.Error())
+	if err := config.NewConfig(); err != nil {
+		log.Fatalf("read config failed: %s\n", err.Error())
 	}
+		
+	logger.NewLogger(config.Cfg.Log)
 
+	if err := server.RunServer(); err != nil {
+		log.Fatalf("start rpc server failed: %s\n", err.Error())
+	}
 }
