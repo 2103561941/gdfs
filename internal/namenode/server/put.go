@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cyb0225/gdfs/internal/namenode/tree"
+	"github.com/cyb0225/gdfs/pkg/log"
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )
 
@@ -44,9 +45,15 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 	// search datanode to store backups
 	for i := 0; i < len(node.FileKeys); i++ {
 		adds, err := s.alive.Backup()
+		// put file error
 		if err != nil {
+			if _, err := s.tree.Delete(filepath); err != nil {
+				log.Error("delete file failed", log.String("file", filepath), log.Err(err))
+			}
 			return nil, err
 		}
+
+		log.Debugf("put adds %v", adds)
 
 		chunk := &pb.Chunk{
 			Backups: adds,
@@ -56,6 +63,7 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 	}
 
 	res := &pb.PutResponse{Chunks: chunks}
+	log.Debug("put datanodes' address success")
 
 	return res, nil
 }

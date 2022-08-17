@@ -11,4 +11,4 @@ Address:
 
 Timeout: 50 # second, datanode heartbeatExpiredTime
 BackupN: 3  # the num of file chunk backup
-ChunkSize:  1048576 #1024*1024, 1MB, file chunk
+ChunkSize:  1048576 # #1024*1024, 1MB, file chunk102400

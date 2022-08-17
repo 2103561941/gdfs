@@ -45,12 +45,20 @@ func ExNewLogger() {
 		},
 	}
 
-	logger = NewTeeWithRotate(tops, DebugLevel)
+	logger = newTeeWithRotate(tops, DebugLevel)
 }
 
 func NewLogger(tops []TeeOption, level Level, opts ...Option) {
-	logger = NewTeeWithRotate(tops, level, opts...)
+	logger = newTeeWithRotate(tops, level, opts...)
 }
+
+func ZapLogger() *zap.Logger {
+	if logger == nil {
+		return nil
+	}
+	return logger.l
+}
+
 
 func (z *Logger) Debug(msg string, fields ...Field) {
 	fields = append(fields, getCurrentCaller()...)

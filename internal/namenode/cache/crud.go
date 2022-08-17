@@ -28,3 +28,10 @@ func (c *Cache) Get(filekey string) *Node {
 
 	return node
 }
+
+func (c *Cache) Delete(filekey string) {
+	c.rw.Lock()
+	defer c.rw.Unlock()
+
+	delete(c.mp, filekey)
+}

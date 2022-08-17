@@ -62,7 +62,7 @@ func newTeeWithRotateCore(tops []TeeOption) zapcore.Core {
 	return core
 }
 
-func NewTeeWithRotate(tops []TeeOption, level Level, opts ...Option) *Logger {
+func newTeeWithRotate(tops []TeeOption, level Level, opts ...Option) *Logger {
 
 	core := newTeeWithRotateCore(tops)
 
@@ -76,8 +76,8 @@ func NewTeeWithRotate(tops []TeeOption, level Level, opts ...Option) *Logger {
 	suger := log.Sugar()
 
 	logger := &Logger{
-		l:     log,
-		s:     suger,
+		l: log,
+		s: suger,
 	}
 
 	return logger

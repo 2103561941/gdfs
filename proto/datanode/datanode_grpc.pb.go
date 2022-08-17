@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type DataNodeClient interface {
 	Get(ctx context.Context, in *GetRequset, opts ...grpc.CallOption) (DataNode_GetClient, error)
 	Put(ctx context.Context, opts ...grpc.CallOption) (DataNode_PutClient, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
 type dataNodeClient struct {
@@ -100,12 +101,22 @@ func (x *dataNodePutClient) CloseAndRecv() (*PutResponse, error) {
 	return m, nil
 }
 
+func (c *dataNodeClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, "/datanode_proto.DataNode/Delete", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DataNodeServer is the server API for DataNode service.
 // All implementations must embed UnimplementedDataNodeServer
 // for forward compatibility
 type DataNodeServer interface {
 	Get(*GetRequset, DataNode_GetServer) error
 	Put(DataNode_PutServer) error
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	mustEmbedUnimplementedDataNodeServer()
 }
 
@@ -118,6 +129,9 @@ func (UnimplementedDataNodeServer) Get(*GetRequset, DataNode_GetServer) error {
 }
 func (UnimplementedDataNodeServer) Put(DataNode_PutServer) error {
 	return status.Errorf(codes.Unimplemented, "method Put not implemented")
+}
+func (UnimplementedDataNodeServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedDataNodeServer) mustEmbedUnimplementedDataNodeServer() {}
 
@@ -179,13 +193,36 @@ func (x *dataNodePutServer) Recv() (*PutRequest, error) {
 	return m, nil
 }
 
+func _DataNode_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataNodeServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/datanode_proto.DataNode/Delete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataNodeServer).Delete(ctx, req.(*DeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DataNode_ServiceDesc is the grpc.ServiceDesc for DataNode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var DataNode_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "datanode_proto.DataNode",
 	HandlerType: (*DataNodeServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Delete",
+			Handler:    _DataNode_Delete_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Get",

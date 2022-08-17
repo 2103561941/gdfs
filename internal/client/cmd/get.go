@@ -85,7 +85,7 @@ func get(filepath string) (*pb1.GetResponse, error) {
 	c := pb1.NewNameNodeClient(conn)
 	res, err := c.Get(context.Background(), &pb1.GetRequest{RemoteFilePath: filepath})
 	if err != nil {
-		return nil, fmt.Errorf("cannot get from namenode: %w", err)
+		return nil, fmt.Errorf("get from namenode failed: %w", err)
 	}
 	return res, nil
 }

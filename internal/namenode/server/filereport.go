@@ -7,8 +7,8 @@ import (
 )
 
 func (s *Server) FileReport(ctx context.Context, req *pb.FileReportRequest) (*pb.FileReportRequest, error) {
-
-	address := req.Addr
+	address := ctx.Value("address").(string)
+	// log.Debug("filereport", log.String("datanode", address))
 	filekey := req.Filekey
 
 	// stored the mapping between filekey and address, then next time, use can use get to find the filekeys' datanode.

@@ -6,4 +6,4 @@ Log:
   MaxAge: 3  #day
 
 NamenodeAddr: 127.0.0.1:50051
-ChunkSize:  1048576 #1024*1024, 1MB, file chunk
+ChunkSize:  1048576 # #1024*1024, 1MB, file chunk

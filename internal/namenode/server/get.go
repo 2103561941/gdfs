@@ -11,13 +11,9 @@ import (
 func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
 
 	filepath := req.RemoteFilePath
-	node := s.tree.Get(filepath)
-	if node == nil {
-		return nil, fmt.Errorf("file: %s is not exist", filepath)
-	}
-
-	if node.IsDirectory() {
-		return nil, fmt.Errorf("file: %s is a directory\n", filepath)
+	node, err := s.tree.Get(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("get file %s failed: %w", filepath, err)
 	}
 
 	// keys is the file chunks' key
@@ -36,6 +32,8 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		// get backups' datanode address
 		backups := s.cache.Get(key)
 		if backups == nil || len(backups.Backups) == 0 {
+
+			
 			return nil, fmt.Errorf("file is not exist")
 		}
 

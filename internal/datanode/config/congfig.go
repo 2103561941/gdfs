@@ -13,6 +13,7 @@ var (
 )
 
 type Config struct {
+	HeartBeatTime int  			`yaml:"HeartBeatTime"`
 	StoragePath  string         `yaml:"StoragePath"`
 	NamenodeAddr string         `yaml:"NamenodeAddr"`
 	Addr         *Address       `yaml:"Address"`
@@ -43,6 +44,7 @@ func NewConfig() error {
 	}
 	Cfg.NamenodeAddr = vp.GetString("NamenodeAddr")
 	Cfg.StoragePath = vp.GetString("StoragePath")
+	Cfg.HeartBeatTime = vp.GetInt("HeartBeatTime")
 
 	if err := vp.UnmarshalKey("Log", &Cfg.Log); err != nil {
 		return err

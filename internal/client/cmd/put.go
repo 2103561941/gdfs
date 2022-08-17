@@ -45,11 +45,17 @@ func Put(cmd *cobra.Command, args []string) {
 	}
 	// get bytes, should transform to KB
 	filesize := (fileinfo.Size())
+	log.Debug("put file", log.String("filename", localFilePath), log.Int64("filesize", filesize))
 
 	res, err := put(remoteFilePath, filesize)
 	if err != nil {
-		log.Fatal("connect to namenode failed", log.String("namenode", config.Cfg.NamenodeAddr) ,log.Err(err))
+		log.Fatal("put file to namenode failed", log.String("namenode", config.Cfg.NamenodeAddr) ,log.Err(err))
 	}
+	log.Debug("put datanode address", log.Int("chunk length", len(res.Chunks)))
+	for i := 0; i < len(res.Chunks); i++ {
+		log.Debugf("backup %v", res.Chunks[i].Backups)
+	}
+
 
 	// put file data to datanodes
 	r := bufio.NewReader(fd)
@@ -64,10 +70,11 @@ func Put(cmd *cobra.Command, args []string) {
 			}
 			// put to datanode success. then put the next chunk
 			isError = false
+			log.Debug("put file chunk success")
 			break
 		}
 		if isError {
-			log.Fatalf("put file to any datanode failed", log.String("filekey", filekey))
+			log.Fatal("put file to any datanode failed", log.String("filekey", filekey))
 		}
 	}
 	log.Info("put file success!")
@@ -75,6 +82,8 @@ func Put(cmd *cobra.Command, args []string) {
 
 // get datanode information from namenode
 func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
+	// log.Debug("put to namenode", log.String("namenode", config.Cfg.NamenodeAddr))
+
 	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
@@ -88,7 +97,7 @@ func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
 	}
 	res, err := c.Put(context.Background(), req)
 	if err != nil {
-		return nil, fmt.Errorf("get from [%s] server failed: %w", config.Cfg.NamenodeAddr, err)
+		return nil, fmt.Errorf("get from server failed: %w", err)
 	}
 
 	return res, nil
@@ -120,6 +129,7 @@ func putdata(filekey string, r io.Reader, adds []string) error {
 	}
 
 	buf := make([]byte, 1024) //chunk size can divide it.   chunksize mod bufsize = 0
+
 	sum := 0                  // stored the bytes that read.
 	for {
 		n, err := r.Read(buf)
@@ -131,14 +141,15 @@ func putdata(filekey string, r io.Reader, adds []string) error {
 			return fmt.Errorf("read file %s failed: %w", filekey, err)
 		}
 
+		if err := stream.Send(&pb2.PutRequest{Databytes: buf[:n]}); err != nil {
+			return fmt.Errorf("send filestat to datanode failed: %w", err)
+		}
+
 		sum += n
 		if sum >= int(config.Cfg.ChunkSize) { // every chunk's size
 			break
 		}
 
-		if err := stream.Send(&pb2.PutRequest{Databytes: buf[:n]}); err != nil {
-			return fmt.Errorf("send filestat to datanode failed: %w", err)
-		}
 	}
 
 	if _, err = stream.CloseAndRecv(); err != nil {

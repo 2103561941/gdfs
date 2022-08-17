@@ -12,3 +12,5 @@ Address:
   Port: 50052
 
 StoragePath: ./storage/data/
+
+HeartBeatTime: 20 #second

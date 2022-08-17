@@ -126,3 +126,9 @@ func TestCreateFileKeys(t *testing.T) {
 	fmt.Println(len(f.FileKeys))
 	fmt.Println(f.FileKeys)
 }
+
+func TestDelete(t *testing.T) {
+
+
+	
+}

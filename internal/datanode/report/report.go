@@ -7,14 +7,11 @@ import (
 	"time"
 
 	"github.com/cyb0225/gdfs/internal/datanode/config"
+	"github.com/cyb0225/gdfs/internal/pkg/middleware"
 	"github.com/cyb0225/gdfs/pkg/log"
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-)
-
-var (
-	
 )
 
 type Report struct{}
@@ -32,21 +29,24 @@ func (r *Report) HeartBeat() {
 			os.Exit(1)
 		}
 
-		time.Sleep(time.Second * 20)
+		time.Sleep(time.Second * time.Duration(config.Cfg.HeartBeatTime))
 	}
 }
 
 func heartbeat() error {
-	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	addr := config.Cfg.Addr.IP + ":" + config.Cfg.Addr.Port
+
+	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, 
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithChainUnaryInterceptor(middleware.UnaryClientInterceptor(addr)))
 	if err != nil {
 		return err
 	}
 
 	defer conn.Close()
 	
-	addr := config.Cfg.Addr.IP + ":" + config.Cfg.Addr.Port
 	c := pb.NewNameNodeClient(conn)
-	if _, err := c.HeartBeat(context.Background(), &pb.HeartBeatRequset{Addr: addr}); err != nil {
+	if _, err := c.HeartBeat(context.Background(), &pb.HeartBeatRequset{}); err != nil {
 		return fmt.Errorf("get namenode' heartbeat failed: %w", err)
 	}
 
@@ -55,19 +55,21 @@ func heartbeat() error {
 
 // report file to namenode cache
 func (r *Report) FileReport(filekey string) error {
-	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	addr := config.Cfg.Addr.IP + ":" + config.Cfg.Addr.Port
+
+	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, 
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithChainUnaryInterceptor(middleware.UnaryClientInterceptor(addr)),
+	)
 	if err != nil {
 		return fmt.Errorf("connect to namenode[%s] failed: %w", config.Cfg.NamenodeAddr, err)
 	}
 
 	defer conn.Close()
 
-
-	addr := config.Cfg.Addr.IP + ":" + config.Cfg.Addr.Port
 	c := pb.NewNameNodeClient(conn)
 	req := &pb.FileReportRequest{
 		Filekey: filekey,
-		Addr:    addr,
 	}
 	if _, err := c.FileReport(context.Background(), req); err != nil {
 		return fmt.Errorf("get namenode' filereport failed: %w", err)

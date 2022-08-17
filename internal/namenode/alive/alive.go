@@ -9,11 +9,12 @@ import (
 	"time"
 
 	"github.com/cyb0225/gdfs/internal/namenode/config"
+	"github.com/cyb0225/gdfs/pkg/log"
 )
 
 // record alived datanode
 type Alive struct {
-	rw sync.RWMutex
+	mu sync.Mutex
 
 	// string records the address of datanode
 	// it stored last := time datanode heartbeat to namenode, when I need to use
@@ -37,8 +38,8 @@ func NewAlive() *Alive {
 
 // datanode online
 func (a *Alive) Update(key string) {
-	a.rw.Lock()
-	defer a.rw.Unlock()
+	a.mu.Lock()
+	defer a.mu.Unlock()
 	_, ok := a.mp[key]
 	if !ok { // not register before
 		a.balance = append(a.balance, key)
@@ -51,31 +52,35 @@ func (a *Alive) Update(key string) {
 // check datanode is alive or not
 // if datanode is not alive, then kick it out
 func (a *Alive) IsAlive(key string) bool {
-	a.rw.RLock()
-	defer a.rw.RUnlock()
+	a.mu.Lock()
+	defer a.mu.Unlock()
 
 	t, ok := a.mp[key]
 	if !ok { // datanode haven't register
+		// log.Debug("key not exist", log.String("key", key))
+		delete(a.mp, key)
 		return false
 	}
 
 	expireTime := time.Since(t)
+	// timeout := time.Duration(config.Cfg.Timeout) * time.Second
 	timeout := time.Duration(config.Cfg.Timeout) * time.Second
-	return expireTime <= timeout
+
+	return expireTime < timeout
 }
 
 // backup needs to think about the number of datanode and backups,
 // because, stored the same backups in one datanode is useless,
 // so choose Backup datanode should ompare the number of servers and the number of backups which is smaller
 func (a *Alive) Backup() ([]string, error) {
-	length := len(a.balance)
+	length := len(a.mp)
+	log.Debug("alive datanode", log.Int("datanode num", length))
+
 	if length == 0 {
-		return nil, fmt.Errorf("there is no alived address")
+		return nil, fmt.Errorf("there is no alived datanode")
 	}
 
 	str := make([]string, 0)
-
-	startIndex := rand.Intn(length) // return [0, len)
 
 	var n int
 	if config.Cfg.BackupN < length {
@@ -84,16 +89,20 @@ func (a *Alive) Backup() ([]string, error) {
 		n = length
 	}
 
-	for i := 0; i < n; i++ {
-		index := (i + startIndex) % length
-		key := a.balance[index]
-		if ok := a.IsAlive(key); ok {
-			str = append(str, key)
+	i := 0
+	log.Debug("backup num", log.Int("n", n), log.Int("backups", config.Cfg.BackupN))
+	for k, _ := range a.mp {
+		if i >= n {
+			break
+		}
+		if ok := a.IsAlive(k); ok {
+			str = append(str, k)
+			i++
 		}
 	}
 
 	if len(str) == 0 {
-		return nil, fmt.Errorf("there is no alived address")
+		return nil, fmt.Errorf("datanode are all died")
 	}
 
 	return str, nil

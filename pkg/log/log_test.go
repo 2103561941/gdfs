@@ -13,6 +13,8 @@ func TestZap(t *testing.T) {
 	if err != nil {
 		Debug("", zap.Error(err))
 	}
-	Debug("debug")
-	Error("error")
+
+	for i := 0; i < 1000000; i++ {
+		Debug("debug", Int("debug", i))
+	}
 }

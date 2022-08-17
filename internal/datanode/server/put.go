@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/cyb0225/gdfs/internal/datanode/config"
+	"github.com/cyb0225/gdfs/internal/pkg/middleware"
 	"github.com/cyb0225/gdfs/pkg/log"
 	pb "github.com/cyb0225/gdfs/proto/datanode"
 	"google.golang.org/grpc"
@@ -102,14 +103,19 @@ func putdata(filekey string, r io.Reader, adds []string) error {
 
 	// if put one datanode failed, then try to put to next backups.
 	// at the same time
-	address := adds[0]
+	address := adds[0] // other datanode's ip 
+	addr := config.Cfg.Addr.IP + ":" + config.Cfg.Addr.Port // this datanode's ip
 
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(address, 
+						grpc.WithTransportCredentials(insecure.NewCredentials()),
+						grpc.WithChainUnaryInterceptor(middleware.UnaryClientInterceptor(addr)))
+
 	if err != nil {
 		return fmt.Errorf("connect to server failed: %w", err)
 	}
 	defer conn.Close()
 
+	log.Debug("put data to datanode", log.String("ip", addr), log.String("datanode", address))
 	c := pb.NewDataNodeClient(conn)
 	stream, err := c.Put(context.Background())
 	if err != nil {

@@ -3,9 +3,11 @@ package tree
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/cyb0225/gdfs/internal/namenode/config"
 	"github.com/cyb0225/gdfs/internal/pkg/util"
+	"github.com/cyb0225/gdfs/pkg/log"
 )
 
 const (
@@ -36,11 +38,13 @@ func NewTree() *Tree {
 // if file is directory, then the file keys is empty and filesize is zero.
 // on the other hand, if file is normal file, than the children is empty.
 type Node struct {
-	FileName string
-	FileType int    // directory or normal file
-	FilePath string // filepath contains the filename and its parents' directory
-	FileSize int64
-	FileKeys []string // file keys, it records the chunks' uuid of file
+	FileName   string
+	FileType   int    // directory or normal file
+	FilePath   string // filepath contains the filename and its parents' directory
+	FileSize   int64
+	FileKeys   []string // file keys, it records the chunks' uuid of file
+	UpdateTime time.Time
+	CreateTime time.Time
 
 	Children []*Node
 }
@@ -49,9 +53,11 @@ type Node struct {
 // so I chooose to use the function to init, and use options to fill this node.
 func NewNode(opts ...Option) *Node {
 	node := &Node{
-		FileSize: 0,
-		Children: make([]*Node, 0),
-		FileKeys: make([]string, 0),
+		FileSize:   0,
+		Children:   make([]*Node, 0),
+		FileKeys:   make([]string, 0),
+		UpdateTime: time.Now(),
+		CreateTime: time.Now(),
 	}
 
 	for _, opt := range opts {
@@ -111,6 +117,7 @@ func (n *Node) AppendChild(node *Node) error {
 	}
 
 	n.Children = append(n.Children, node)
+	n.UpdateTime = time.Now()
 	return nil
 }
 
@@ -127,6 +134,8 @@ func (n *Node) CreateFileKeys() error {
 	//Rounded up
 	size := config.Cfg.ChunkSize
 	num := int64(n.FileSize / size)
+	log.Debug("creat chunks", log.Int64("num", num), log.Int64("filesize", n.FileSize), log.Int64("chunk size", size))
+
 	if n.FileSize%size != 0 {
 		num += 1
 	}
@@ -140,5 +149,7 @@ func (n *Node) CreateFileKeys() error {
 		}
 		n.FileKeys[i] = uuid
 	}
+
+	n.UpdateTime = time.Now()
 	return nil
 }

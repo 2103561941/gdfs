@@ -6,6 +6,7 @@ package datanode_proto;
 service DataNode {
     rpc Get(GetRequset)returns(stream GetResponse){}
     rpc Put(stream PutRequest)returns(PutResponse){}
+    rpc Delete(DeleteRequest)returns(DeleteResponse){}
 }
 
 message GetRequset {
@@ -25,3 +26,9 @@ message PutRequest {
 message PutResponse {
 
 }
+
+message DeleteRequest {
+    string filekey = 1;
+}
+
+message DeleteResponse {}

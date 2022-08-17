@@ -5,6 +5,11 @@ package namenode_proto;
 service NameNode {
     rpc Get(GetRequest)returns(GetResponse){}
     rpc Put(PutRequest)returns(PutResponse){}
+    rpc Mkdir(MkdirRequset)returns(MkdirResponse){}
+    rpc Rename(RenameRequest)returns(RenameResponse){}
+    rpc Stat(StatRequest)returns(StatResponse){}
+    rpc List(ListRequest)returns(ListResponse){}
+    rpc Delete(DeleteRequest)returns(DeleteResponse){}
 
     rpc HeartBeat(HeartBeatRequset)returns(HeartBeatResponse){}
     rpc FileReport(FileReportRequest)returns(FileReportRequest){}
@@ -27,20 +32,54 @@ message PutResponse {
     repeated Chunk chunks = 1;
 }
 
-message HeartBeatRequset {
-    string addr = 1;
+message MkdirRequset {
+    string remoteFilePath = 1;
 }
+
+message MkdirResponse {}
+
+message RenameRequest {
+    string renameSrcPath = 1;
+    string renameDestPath = 2;
+}
+
+message RenameResponse {}
+
+message StatRequest{
+    string remoteFilePath = 1;
+}
+
+message StatResponse {
+    string fileName = 1;
+    int64 filesize = 2;
+    bool isDirectory = 3;
+    string updateTime = 4;
+    string createTime = 5;
+}
+
+message ListRequest {
+    string remoteDirPath = 1;
+}
+
+message ListResponse {
+    repeated StatResponse fileInfos = 1;
+}
+
+message DeleteRequest {
+    string remoteFilePath = 1;
+}
+
+message DeleteResponse {}
+
+message HeartBeatRequset {}
 
 message HeartBeatResponse {}
 
 message FileReportRequest {
     string filekey = 1;
-    string addr = 2;
 }
 
-message FileReportResponse {
-    
-}
+message FileReportResponse {}
 
 // file chunks(a large file can be split to lots of smaller files)
 message Chunk {
