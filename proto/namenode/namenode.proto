@@ -12,7 +12,7 @@ service NameNode {
     rpc Delete(DeleteRequest)returns(DeleteResponse){}
 
     rpc HeartBeat(HeartBeatRequset)returns(HeartBeatResponse){}
-    rpc FileReport(FileReportRequest)returns(FileReportRequest){}
+    rpc FileReport(FileReportRequest)returns(FileReportResponse){}
 }
 
 message GetRequest {
@@ -79,7 +79,9 @@ message FileReportRequest {
     string filekey = 1;
 }
 
-message FileReportResponse {}
+message FileReportResponse {
+    bool isExist = 1;
+}
 
 // file chunks(a large file can be split to lots of smaller files)
 message Chunk {

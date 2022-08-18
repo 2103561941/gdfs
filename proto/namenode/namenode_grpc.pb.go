@@ -30,7 +30,7 @@ type NameNodeClient interface {
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error)
-	FileReport(ctx context.Context, in *FileReportRequest, opts ...grpc.CallOption) (*FileReportRequest, error)
+	FileReport(ctx context.Context, in *FileReportRequest, opts ...grpc.CallOption) (*FileReportResponse, error)
 }
 
 type nameNodeClient struct {
@@ -113,8 +113,8 @@ func (c *nameNodeClient) HeartBeat(ctx context.Context, in *HeartBeatRequset, op
 	return out, nil
 }
 
-func (c *nameNodeClient) FileReport(ctx context.Context, in *FileReportRequest, opts ...grpc.CallOption) (*FileReportRequest, error) {
-	out := new(FileReportRequest)
+func (c *nameNodeClient) FileReport(ctx context.Context, in *FileReportRequest, opts ...grpc.CallOption) (*FileReportResponse, error) {
+	out := new(FileReportResponse)
 	err := c.cc.Invoke(ctx, "/namenode_proto.NameNode/FileReport", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ type NameNodeServer interface {
 	List(context.Context, *ListRequest) (*ListResponse, error)
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error)
-	FileReport(context.Context, *FileReportRequest) (*FileReportRequest, error)
+	FileReport(context.Context, *FileReportRequest) (*FileReportResponse, error)
 	mustEmbedUnimplementedNameNodeServer()
 }
 
@@ -166,7 +166,7 @@ func (UnimplementedNameNodeServer) Delete(context.Context, *DeleteRequest) (*Del
 func (UnimplementedNameNodeServer) HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HeartBeat not implemented")
 }
-func (UnimplementedNameNodeServer) FileReport(context.Context, *FileReportRequest) (*FileReportRequest, error) {
+func (UnimplementedNameNodeServer) FileReport(context.Context, *FileReportRequest) (*FileReportResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileReport not implemented")
 }
 func (UnimplementedNameNodeServer) mustEmbedUnimplementedNameNodeServer() {}

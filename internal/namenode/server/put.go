@@ -62,6 +62,18 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 		chunks[i] = chunk
 	}
 
+	// create filekey in cache
+	for i := 0; i < len(chunks); i++ {
+		if err := s.cache.Create(chunks[i].FileKey); err != nil {
+			log.Error("create filekey to cache failed", log.String("filekey", chunks[i].FileKey), log.Err(err))
+			// delete filekeys in cache
+			for j := 0; j < i; j++ {
+				s.cache.Delete(chunks[j].FileKey)
+			}
+			return nil, fmt.Errorf("create filekey to cache failed") 
+		}
+	}
+
 	res := &pb.PutResponse{Chunks: chunks}
 	log.Debug("put datanodes' address success")
 
