@@ -28,16 +28,21 @@ func init() {
 func Stat(cmd *cobra.Command, args []string) {
 	res, err := stat(args[0])
 	if err != nil {
+		fmt.Printf("get file stat failed:\n\t %s\n", err.Error())
 		log.Fatal("get file stat failed", log.Err(err))
 	}
 
-	log.Info("get file stat success", 
-			log.String("filename", res.FileName),
-			log.Int64("filesize", res.Filesize),
-			log.Bool("isDirectory", res.IsDirectory),
-			log.String("createTime", res.CreateTime),
-			log.String("updateTime", res.UpdateTime),
-		)
+	fileType := "directory"
+	if !res.IsDirectory {
+		fileType = "file"
+	}
+	fmt.Printf("fileName: %s\n", res.FileName)
+	fmt.Printf("fileSize(B): %d\n", res.Filesize)
+	fmt.Printf("fileType: %s\n", fileType)
+	fmt.Printf("createAt: %s\n", res.CreateTime)
+	fmt.Printf("updateAt: %s\n", res.UpdateTime)
+
+
 }
 
 func stat(filepath string) (*pb1.StatResponse, error) {

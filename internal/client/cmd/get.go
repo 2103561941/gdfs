@@ -16,11 +16,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-
 var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "get file from remote file system and save in local file system",
-
 	// args check
 	Args: func(cmd *cobra.Command, args []string) error {
 		return equalNumArgs(2, args)
@@ -38,11 +36,13 @@ func Get(cmd *cobra.Command, args []string) {
 
 	res, err := get(remoteFilePath)
 	if err != nil {
+		fmt.Printf("get file failed:\n\t %s\n", err.Error())
 		log.Fatal("connect to namenode failed", log.Err(err))
 	}
 
 	fd, err := os.OpenFile(localFilePath, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
+		fmt.Printf("get file failed:\n\t %s\n", err.Error())
 		log.Fatal("create file failed", log.String("file", localFilePath), log.Err(err))
 	}
 	defer fd.Close()
@@ -64,12 +64,14 @@ func Get(cmd *cobra.Command, args []string) {
 		}
 		// it means that client cannot get data from any datanode
 		if isError {
+			fmt.Printf("get file failed:\n\t %s\n", err.Error())
 			log.Fatalf("get file failed from any datanode", log.String("filekey", filekey))
 		}
 	}
 
 	// Notice, if don't use this funciton, file will not have the data.
 	w.Flush()
+	fmt.Println("get file success!")
 	log.Info("get file success!")
 }
 
@@ -79,7 +81,6 @@ func get(filepath string) (*pb1.GetResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	defer conn.Close()
 
 	c := pb1.NewNameNodeClient(conn)
@@ -97,7 +98,6 @@ func getdata(filekey string, addr string, w io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("connect to namenode failed: %w", err)
 	}
-
 	defer conn.Close()
 
 	c := pb2.NewDataNodeClient(conn)
@@ -117,9 +117,7 @@ func getdata(filekey string, addr string, w io.Writer) error {
 		if err != nil {
 			return fmt.Errorf("get file data from %s failed: %w", addr, err)
 		}
-
 		// log.Println(string(res.Databytes))
-
 		if _, err := w.Write(res.Databytes); err != nil {
 			return fmt.Errorf("write to local file failed: %w", err)
 		}
@@ -128,6 +126,5 @@ func getdata(filekey string, addr string, w io.Writer) error {
 	if err := stream.CloseSend(); err != nil {
 		return fmt.Errorf("close send stream failed: %w", err)
 	}
-
 	return nil
 }

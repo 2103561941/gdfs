@@ -35,27 +35,24 @@ func Put(cmd *cobra.Command, args []string) {
 
 	fd, err := os.Open(localFilePath)
 	if err != nil {
+		fmt.Printf("put file failed:\n\t %s\n", err.Error())
 		log.Fatal("failed to open file", log.String("file", localFilePath), log.Err(err))
 	}
 	defer fd.Close()
 
 	fileinfo, err := fd.Stat()
 	if err != nil {
+		fmt.Printf("put file failed:\n\t %s\n", err.Error())
 		log.Fatal("get file stat failed", log.String("file", localFilePath), log.Err(err))
 	}
 	// get bytes, should transform to KB
 	filesize := (fileinfo.Size())
-	log.Debug("put file", log.String("filename", localFilePath), log.Int64("filesize", filesize))
 
 	res, err := put(remoteFilePath, filesize)
 	if err != nil {
+		fmt.Printf("put file failed:\n\t %s\n", err.Error())
 		log.Fatal("put file to namenode failed", log.String("namenode", config.Cfg.NamenodeAddr) ,log.Err(err))
 	}
-	log.Debug("put datanode address", log.Int("chunk length", len(res.Chunks)))
-	for i := 0; i < len(res.Chunks); i++ {
-		log.Debugf("backup %v", res.Chunks[i].Backups)
-	}
-
 
 	// put file data to datanodes
 	r := bufio.NewReader(fd)
@@ -70,20 +67,19 @@ func Put(cmd *cobra.Command, args []string) {
 			}
 			// put to datanode success. then put the next chunk
 			isError = false
-			log.Debug("put file chunk success")
 			break
 		}
 		if isError {
+			fmt.Printf("put file failed:\n\t %s\n", err.Error())
 			log.Fatal("put file to any datanode failed", log.String("filekey", filekey))
 		}
 	}
+	fmt.Println("put file success!")
 	log.Info("put file success!")
 }
 
 // get datanode information from namenode
 func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
-	// log.Debug("put to namenode", log.String("namenode", config.Cfg.NamenodeAddr))
-
 	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
@@ -106,7 +102,6 @@ func put(filepath string, filesize int64) (*pb1.PutResponse, error) {
 // put data to datanode
 // add[0] stored the address which will be visited, and adds[1:] stored the other backups' address.
 func putdata(filekey string, r io.Reader, adds []string) error {
-
 	// if put one datanode failed, then try to put to next backups.
 	// at the same time
 	address := adds[0]
@@ -149,12 +144,10 @@ func putdata(filekey string, r io.Reader, adds []string) error {
 		if sum >= int(config.Cfg.ChunkSize) { // every chunk's size
 			break
 		}
-
 	}
 
 	if _, err = stream.CloseAndRecv(); err != nil {
 		return fmt.Errorf("close client stream failed: %w", err)
 	}
-
 	return nil
 }

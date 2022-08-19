@@ -25,7 +25,6 @@ func Execute() {
 	}
 }
 
-
 func GenDocs(filepath string) error {
 	return doc.GenMarkdownTree(rootCmd, filepath)
 }

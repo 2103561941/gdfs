@@ -27,9 +27,11 @@ func init() {
 
 func Mkdir(cmd *cobra.Command, args []string) {
 	if _, err := mkdir(args[0]); err != nil {
+		fmt.Printf("make directory failed:\n\t %s\n", err.Error())
 		log.Fatal("make directory failed", log.Err(err))
 	}
 
+	fmt.Println("make directory success!")
 	log.Info("make directroy success!")
 }
 

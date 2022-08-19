@@ -28,19 +28,25 @@ func init() {
 func List(cmd *cobra.Command, args []string) {
 	res, err := list(args[0])
 	if err != nil {
+		fmt.Printf("list dir failed:\n\t %s\n", err.Error())
 		log.Fatal("list dir failed", log.Err(err))
 	}
 
 	// show results
-	log.Info("list dir success")
+	log.Info("list dir success!")
+	if len(res.FileInfos) == 0 {
+		fmt.Println("empty.")
+		return
+	}
+	fmt.Println("name size(B) type createAt updateAt")
+
 	for i := 0; i < len(res.FileInfos); i++ {
-		log.Info("file stat",
-			log.String("filename", res.FileInfos[i].FileName),
-			log.Int64("filesize", res.FileInfos[i].Filesize),
-			log.Bool("isDirectory", res.FileInfos[i].IsDirectory),
-			log.String("createTime", res.FileInfos[i].CreateTime),
-			log.String("updateTime", res.FileInfos[i].UpdateTime),
-		)
+		file := res.FileInfos[i]
+		fileType := "directory"
+		if !file.IsDirectory {
+			fileType = "file"
+		}
+		fmt.Printf("%s %d %s %s %s\n", file.FileName, file.Filesize, fileType, file.CreateTime, file.UpdateTime)
 	}
 }
 

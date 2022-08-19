@@ -11,13 +11,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete file in remote file system",
 	Args: func(cmd *cobra.Command, args []string) error {
-		return equalNumArgs(1, args) 
+		return equalNumArgs(1, args)
 	},
-	Run:Delete,
+	Run: Delete,
 }
 
 func init() {
@@ -27,12 +28,15 @@ func init() {
 func Delete(cmd *cobra.Command, args []string) {
 	_, err := delete(args[0])
 	if err != nil {
+		fmt.Printf("delete file failed:\n\t %s\n", err.Error())
 		log.Fatal("delete file failed", log.Err(err))
 	}
 
+	fmt.Println("delete file success!")
 	log.Info("delete file success!")
 }
 
+// Connect to namenode.
 func delete(filepath string) (*pb1.DeleteResponse, error) {
 	conn, err := grpc.Dial(config.Cfg.NamenodeAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

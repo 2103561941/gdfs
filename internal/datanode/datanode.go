@@ -16,7 +16,14 @@ func Run() {
 		
 	logger.NewLogger(config.Cfg.Log)
 
-	if err := server.RunServer(); err != nil {
+	cfg := &server.ServerConfig{
+		IP: config.Cfg.Addr.IP,
+		Port: config.Cfg.Addr.Port,
+		StoragePath: config.Cfg.StoragePath,
+		NamenodeAddr: config.Cfg.NamenodeAddr,
+		HeartBeatTime: config.Cfg.HeartBeatTime,
+	}
+	if err := server.RunServer(cfg); err != nil {
 		log.Fatalf("start rpc server failed: %s\n", err.Error())
 	}
 }

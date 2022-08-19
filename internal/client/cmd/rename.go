@@ -27,9 +27,11 @@ func init() {
 
 func Rename(cmd *cobra.Command, args []string) {
 	if _, err := rename(args[0], args[1]); err != nil {
+		fmt.Printf("rename failed:\n\t %s\n", err.Error())
 		log.Fatal("rename failed", log.Err(err))
 	}
 
+	fmt.Println("rename success!")
 	log.Info("rename success!")
 }
 
