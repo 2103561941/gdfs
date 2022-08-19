@@ -7,47 +7,29 @@ import (
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )
 
-// get datanode infomation
+// Get addresses of datanodes which stored this file's chunks and backups.
 func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
-
 	filepath := req.RemoteFilePath
 	node, err := s.tree.Get(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("get file %s failed: %w", filepath, err)
 	}
 
-	// keys is the file chunks' key
-	keys := node.FileKeys
-
-	chunks := make([]*pb.Chunk, len(keys))
-
-	// get backups form keys
-	for i, key := range keys {
+	// filekeys is the file chunks' key
+	filekeys := node.FileKeys
+	chunks := make([]*pb.Chunk, len(filekeys))
+	// Get backups form filekeys.
+	for i, filekey := range filekeys {
 		chunk := &pb.Chunk{
-			FileKey: key,
-		}
-		chunk.FileKey = key
-
-		chunk.Backups = make([]string, 0)
-		// get backups' datanode address
-		backups := s.cache.Get(key)
-		if backups == nil || len(backups.Backups) == 0 {
-
-			
-			return nil, fmt.Errorf("file is not exist")
+			FileKey: filekey,
 		}
 
-		// check is datanode alive
-		for _, address := range backups.Backups {
-			if ok := s.alive.IsAlive(address); ok {
-				chunk.Backups = append(chunk.Backups, address)
-			}
+		// Get addressed of datanodes which stored this file(filekey).
+		backups, err := s.cache.Get(filekey)
+		if err != nil {
+			return nil, fmt.Errorf("get filekey's datanode failed: %w", err)
 		}
-		// it turns out that there is no datanode store this file chunk. file is lost.
-		if chunk.Backups == nil || len(chunk.Backups) == 0 {
-			return nil, fmt.Errorf("file is lost")
-		}
-
+		chunk.Backups = backups
 		chunks[i] = chunk
 	}
 

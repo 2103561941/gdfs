@@ -79,9 +79,7 @@ message FileReportRequest {
     string filekey = 1;
 }
 
-message FileReportResponse {
-    bool isExist = 1;
-}
+message FileReportResponse {}
 
 // file chunks(a large file can be split to lots of smaller files)
 message Chunk {

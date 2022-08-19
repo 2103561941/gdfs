@@ -8,6 +8,8 @@ import (
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )
 
+// List the stat of subfiles.
+// So the object of method 'List' must be a directory.
 func (s *Server) List(ctx context.Context, req *pb.ListRequest) (*pb.ListResponse, error) {
 	dirpath := req.RemoteDirPath
 	nodes, err := s.tree.List(dirpath)

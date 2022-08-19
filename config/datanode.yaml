@@ -11,6 +11,6 @@ Address:
   IP: 127.0.0.1
   Port: 50052
 
-StoragePath: ./storage/data/
+StoragePath: ./storage/data/datanode/
 
 HeartBeatTime: 20 #second

@@ -8,6 +8,7 @@ import (
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )
 
+// Return the stat of a file.
 func (s *Server) Stat(ctx context.Context, req *pb.StatRequest) (*pb.StatResponse, error) {
 	filepath := req.RemoteFilePath
 	node, err := s.tree.Stat(filepath)

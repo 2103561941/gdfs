@@ -8,6 +8,7 @@ import (
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )
 
+// Rename
 func (s *Server) Rename(ctx context.Context, req *pb.RenameRequest) (*pb.RenameResponse, error) {
 	src := req.RenameSrcPath
 	dest := req.RenameDestPath
@@ -17,6 +18,7 @@ func (s *Server) Rename(ctx context.Context, req *pb.RenameRequest) (*pb.RenameR
 		return nil, fmt.Errorf("rename file failed: %w", err)
 	}
 
+	_ = s.tree.Per.Rename(src, dest)
 	res := &pb.RenameResponse{}
 	return res, nil 
 }

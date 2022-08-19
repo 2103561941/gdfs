@@ -1,5 +1,5 @@
 Log:
-  Module: debug  #it can input debug, info(release)
+  Module: release  #it can input debug, info(release)
   LogPath: ./storage/log/client/
   MaxSize:   1  #MB
   MaxBackups: 3

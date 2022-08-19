@@ -116,7 +116,7 @@ func (t *Tree) Delete(filepath string) (*Node, error) {
 }
 
 // do not allowed create recursively
-func (t *Tree) Mkdir(filepath string) error {
+func (t *Tree) Mkdir(filepath string) (*Node, error){
 	row := split(filepath)
 	log.Debugf("row: %+v", row)
 
@@ -136,12 +136,12 @@ func (t *Tree) Mkdir(filepath string) error {
 	log.Debugf("row: %+v", patterns)
 
 	if err := checkHaveDir(patterns); err != nil {
-		return err
+		return nil, err
 	}
 
 	// check if the directory is legal or not.
 	if err := checkFilename(patterns); err != nil {
-		return err
+		return nil, err
 	}
 
 	t.rw.RLock()
@@ -149,23 +149,24 @@ func (t *Tree) Mkdir(filepath string) error {
 	t.rw.RUnlock()
 
 	if parentDir == nil {
-		return fmt.Errorf("dir: %s not exist", parentDir.FileName)
+		return nil, fmt.Errorf("dir: %s not exist", parentDir.FileName)
 	}
 
 	log.Debug("get parentdir", log.String("parentdir", parentDir.FileName))
 	node := NewNode(
 		IsDirectory(true),
 		SetFileName(patterns[lastIndex]),
+		SetFilePath(filepath),
 	)
 
 	t.rw.Lock()
 	defer t.rw.Unlock()
 	if err := parentDir.AppendChild(node); err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Info("make directory success", log.String("path", filepath))
-	return nil
+	return node, nil
 }
 
 // rename / move file to another filepath, change the last pattern

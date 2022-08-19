@@ -6,18 +6,12 @@ import (
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )
 
+// When datanode stored a file successfully or restart, it will report the file to namenode. 
 func (s *Server) FileReport(ctx context.Context, req *pb.FileReportRequest) (*pb.FileReportResponse, error) {
 	address := ctx.Value("address").(string)
-	// log.Debug("filereport", log.String("datanode", address))
 	filekey := req.Filekey
+	s.cache.Put(filekey, address)
 
-	res := &pb.FileReportResponse{
-		IsExist: true,
-	}
-	// stored the mapping between filekey and address, then next time, use can use get to find the filekeys' datanode.
-	if err := s.cache.Put(filekey, address); err != nil {
-		res.IsExist = false
-	}
-
+	res := &pb.FileReportResponse{}
 	return res, nil
 }

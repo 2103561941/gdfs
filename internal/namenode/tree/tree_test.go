@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	tree = NewTree()
+	tree, _ = NewTree("./stroage/")
+	chunckSize int64 = 1024 *1024
 )
 
 // create a mock tree
@@ -47,7 +48,7 @@ func TestPut(t *testing.T) {
 	if err := tree.Put(filepath, node); err != nil {
 		t.Fatalf("check the file tree, file has not been push into the file tree, but it has been found: %s", err.Error())
 	}
-	
+
 	s := search(split(filepath), tree.Root, 0)
 	if s != node {
 		t.Fatalf(
@@ -61,9 +62,8 @@ func TestPut(t *testing.T) {
 	}
 }
 
-
 // test basic funciton.
-// test if the file is existed. 
+// test if the file is existed.
 // test if the file is a normalfile
 func TestAppendChild(t *testing.T) {
 	n := NewNode(
@@ -100,7 +100,7 @@ func TestCreateFileKeys(t *testing.T) {
 		SetFilePath("/hello"),
 	)
 
-	if err := n.CreateFileKeys(); err == nil {
+	if err := n.CreateFileKeys(chunckSize); err == nil {
 		t.Fatalf("directory file can CreateFileKeys")
 	}
 
@@ -110,17 +110,16 @@ func TestCreateFileKeys(t *testing.T) {
 		SetFileSize(0),
 	)
 
-	
-	if err := e.CreateFileKeys(); err == nil {
+	if err := e.CreateFileKeys(chunckSize); err == nil {
 		t.Fatalf("empty file can CreateFileKeys")
 	}
 
 	f := NewNode(
 		IsDirectory(false),
 		SetFileName("cyb"),
-		SetFileSize(1024 + 1),
+		SetFileSize(1024+1),
 	)
-	if err := f.CreateFileKeys(); err != nil {
+	if err := f.CreateFileKeys(chunckSize); err != nil {
 		t.Fatalf("normal file cannot CreateFileKeys: %s", err.Error())
 	}
 	fmt.Println(len(f.FileKeys))
@@ -129,6 +128,4 @@ func TestCreateFileKeys(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 
-
-	
 }

@@ -14,36 +14,42 @@ import (
 
 func (s *Server) Delete(ctx context.Context, req *pb1.DeleteRequest) (*pb1.DeleteResponse, error) {
 	filepath := req.RemoteFilePath
-	// delete file in file tree
+	// Delete file in file tree
 	node, err := s.tree.Delete(filepath)
 	if err != nil {
 		log.Info("delete file failed", log.String("file", filepath), log.Err(err))
 		return nil, fmt.Errorf("delete file failed: %w", err)
 	}
 
-	// get all node
+	// Get all node
+	// Delete file may be a directory, so need to find and delete all its subfiles.
 	nodes := s.tree.GetChildrenNode(node)
-	// get filekeys
 	filekeys := getAllFileKeys(nodes)
 
-	// delete filekey in cache
-	// delete files in datanode
+	// Delte filekey in cache. 
+	// At the same time, get addresses of datanodes, and send delete msg to them. 
 	for i := 0; i < len(filekeys); i++ {
-		backups := s.cache.Get(filekeys[i]).Backups
+		backups, err := s.cache.Delete(filekeys[i])
+		if err != nil {
+			// Here I choose to log this error but not to stop.
+			// And continue to delete the remaining filekeys in datanodes.
+			log.Error("failed to get delete backups of filekey", log.String("filekey", filekeys[i]), log.Err(err))
+			continue
+		}
 		for j := 0; j < len(backups); j++ {
 			sendDeleteMsg(backups[j], filekeys[i])
 		}
-		s.cache.Delete(filekeys[i])
 	}
 
+	// do a log.
+	_ = s.tree.Per.Delete(filepath)
 	log.Info("delete file success", log.String("file", filepath))
 	res := &pb1.DeleteResponse{}
 	return res, nil
 }
 
-// get all filekey.
+// Get filekeys from a slice of file Node.
 func getAllFileKeys(nodes []*tree.Node) []string {
-	// get all filekeys.
 	var filekeys []string
 
 	for i := 0; i < len(nodes); i++ {
@@ -55,6 +61,10 @@ func getAllFileKeys(nodes []*tree.Node) []string {
 	return filekeys
 }
 
+// Connect to datanode and Require it to delete relate file.
+// But namenode don't care about if the datanode delete the file successfully.
+// Namenode only needs to delete the file in file tree.
+// In this way, the file is deleted to the outside world.
 func sendDeleteMsg(addr string, filekey string) {
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/cyb0225/gdfs/internal/pkg/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -11,11 +13,12 @@ var (
 )
 
 type Config struct {
-	BackupN   int            `yaml:"BackupN"`
-	Timeout   int            `yaml:"Timeout"`
-	ChunkSize int64          `yaml:"ChunkSize"`
-	Addr      *Address       `yaml:"Address"`
-	Log       *log.LogConfig `yaml:"Log"`
+	BackupN     int            `yaml:"BackupN"`
+	Timeout     int            `yaml:"Timeout"`
+	ChunkSize   int64          `yaml:"ChunkSize"`
+	Addr        *Address       `yaml:"Address"`
+	Log         *log.LogConfig `yaml:"Log"`
+	StoragePath string         `yaml:"StoragePath"`
 }
 
 type Address struct {
@@ -47,9 +50,12 @@ func NewConfig() error {
 	Cfg.BackupN = vp.GetInt("BackupN")
 	Cfg.Timeout = vp.GetInt("Timeout")
 	Cfg.ChunkSize = vp.GetInt64("ChunkSize")
+	Cfg.StoragePath = vp.GetString("StoragePath")
 
 	flag()
-
+	Cfg.Log.LogPath = Cfg.Log.LogPath + Cfg.Addr.Port + "/"
+	Cfg.StoragePath = Cfg.StoragePath + Cfg.Addr.Port + "/"
+	_ = os.Mkdir(Cfg.StoragePath, 0777)
 	return nil
 }
 

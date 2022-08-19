@@ -72,17 +72,12 @@ func (r *Report) FileReport(filekey string) error {
 		Filekey: filekey,
 	}
 
-	res, err := c.FileReport(context.Background(), req)
+	_, err = c.FileReport(context.Background(), req)
 	if err != nil {
 		return fmt.Errorf("get namenode' filereport failed: %w", err)
 	}
 	
 	// filekey not exist in namenode. delete it.
-	if !res.IsExist {
-		if err := os.Remove(config.Cfg.StoragePath + filekey); err != nil {
-			log.Error("delete file failed", log.String("filekey", filekey))
-		}
-	}
 	
 	return nil
 }
