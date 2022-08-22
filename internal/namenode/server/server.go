@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/cyb0225/gdfs/internal/namenode/alive"
 	"github.com/cyb0225/gdfs/internal/namenode/cache"
 	"github.com/cyb0225/gdfs/internal/namenode/tree"
 	"github.com/cyb0225/gdfs/internal/pkg/middleware"
@@ -23,10 +24,11 @@ type Server struct {
 	// Stored relation of files.
 	tree *tree.Tree
 
-	// filekey and datanode cache.
-	// Namnode does not record what files stored in datanode.
-	// It relies on datanode file reporting to stored the relation between filekey and datanode.
+	// Stored which datanode stored this filekey.
 	cache *cache.Cache
+
+	// Stored the status of a datanode.
+	alive *alive.Alive
 
 	backups int // defautl file backups
 	chunkSize int64 // file size per file block
@@ -46,10 +48,12 @@ func newServer(cfg *ServerConfig) (*Server, error) {
 		return nil, fmt.Errorf("new tree failed: %w", err)
 	}
 
-	cache := cache.NewCache(cfg.Expired)
+	cache := cache.NewCache()
+	alive := alive.NewAlive(cfg.Expired)
 	server := &Server{
 		tree:  tree,
 		cache: cache,
+		alive: alive,
 		chunkSize: cfg.ChunkSize,
 		backups: cfg.Backups,
 	}

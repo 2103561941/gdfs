@@ -1,32 +1,27 @@
 package cache
 
-import (
-	"sync"
-	"time"
-)
+import "sync"
 
-// Cache recored the relation between filekey and datanode.
-// Notice: The key of map is string and the value of map is struct, not a pointer.  
+// map string stored file's uuid, which is stored in filetree and datanode.
 type Cache struct {
-	backups  sync.Map // key: filekey, value: datanodeInfo.
-	alive sync.Map	  // key: datanodes, value: filekeyInfo.
-	expired time.Duration 
-}
-
-type filekeyInfo struct {
-	backups []string
-}
-
-type datanodeInfo struct {
-	alive    time.Time
-	filekeys []string
+	rw sync.RWMutex
+	mp map[string]*filekeyInfo
 }
 
 // create a new cache
-func NewCache(expired int) *Cache {
+func NewCache() *Cache {
 	return &Cache{
-		backups: sync.Map{},
-		alive:   sync.Map{},
-		expired: time.Second * time.Duration(expired),
-	}	
+		mp: make(map[string]*filekeyInfo),
+	}
+}
+
+// Filekey's Information
+type filekeyInfo struct {
+	addrs []string // stored which datanodes stored this filekey.
+}
+
+func newNode() *filekeyInfo {
+	return &filekeyInfo{
+		addrs: make([]string, 0),
+	}
 }

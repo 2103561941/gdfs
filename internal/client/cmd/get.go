@@ -54,6 +54,7 @@ func Get(cmd *cobra.Command, args []string) {
 		filekey := chunks[i].FileKey
 		backups := chunks[i].Backups
 		isError := true
+		log.Debugf("backups is :%+v", backups)
 		for j := 0; j < len(backups); j++ {
 			if err := getdata(filekey, backups[j], w); err != nil {
 				log.Error("client get file failed", log.String("datanod", backups[j]), log.Err(err))
@@ -64,8 +65,8 @@ func Get(cmd *cobra.Command, args []string) {
 		}
 		// it means that client cannot get data from any datanode
 		if isError {
-			fmt.Printf("get file failed:\n\t %s\n", err.Error())
-			log.Fatalf("get file failed from any datanode", log.String("filekey", filekey))
+			fmt.Printf("get file failed:\n\t Connect to all datanodes are failed.\n")
+			log.Fatal("get file failed from any datanode", log.String("filekey", filekey))
 		}
 	}
 

@@ -29,15 +29,6 @@ func TestSearch(t *testing.T) {
 	t.Logf("search node: %+v\n", node)
 }
 
-func TestMkdir(t *testing.T) {
-	patterns := split("/tmp/cyb/node")
-	dir := mkdir(patterns, tree.Root, 0)
-	node := search(patterns, tree.Root, 0)
-	if node != dir {
-		t.Logf("mkdir exec error, node: %#v, dir: %#v", node, dir)
-	}
-}
-
 func TestPut(t *testing.T) {
 	filepath := "/tmp/cyb/node/1.txt"
 

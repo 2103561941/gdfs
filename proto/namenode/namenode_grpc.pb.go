@@ -29,6 +29,7 @@ type NameNodeClient interface {
 	Stat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatResponse, error)
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
+	Register(ctx context.Context, in *RegisterRequset, opts ...grpc.CallOption) (*RegisterResponse, error)
 	HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error)
 	FileReport(ctx context.Context, in *FileReportRequest, opts ...grpc.CallOption) (*FileReportResponse, error)
 }
@@ -104,6 +105,15 @@ func (c *nameNodeClient) Delete(ctx context.Context, in *DeleteRequest, opts ...
 	return out, nil
 }
 
+func (c *nameNodeClient) Register(ctx context.Context, in *RegisterRequset, opts ...grpc.CallOption) (*RegisterResponse, error) {
+	out := new(RegisterResponse)
+	err := c.cc.Invoke(ctx, "/namenode_proto.NameNode/Register", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *nameNodeClient) HeartBeat(ctx context.Context, in *HeartBeatRequset, opts ...grpc.CallOption) (*HeartBeatResponse, error) {
 	out := new(HeartBeatResponse)
 	err := c.cc.Invoke(ctx, "/namenode_proto.NameNode/HeartBeat", in, out, opts...)
@@ -133,6 +143,7 @@ type NameNodeServer interface {
 	Stat(context.Context, *StatRequest) (*StatResponse, error)
 	List(context.Context, *ListRequest) (*ListResponse, error)
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
+	Register(context.Context, *RegisterRequset) (*RegisterResponse, error)
 	HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error)
 	FileReport(context.Context, *FileReportRequest) (*FileReportResponse, error)
 	mustEmbedUnimplementedNameNodeServer()
@@ -162,6 +173,9 @@ func (UnimplementedNameNodeServer) List(context.Context, *ListRequest) (*ListRes
 }
 func (UnimplementedNameNodeServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedNameNodeServer) Register(context.Context, *RegisterRequset) (*RegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (UnimplementedNameNodeServer) HeartBeat(context.Context, *HeartBeatRequset) (*HeartBeatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HeartBeat not implemented")
@@ -308,6 +322,24 @@ func _NameNode_Delete_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NameNode_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequset)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NameNodeServer).Register(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/namenode_proto.NameNode/Register",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NameNodeServer).Register(ctx, req.(*RegisterRequset))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _NameNode_HeartBeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HeartBeatRequset)
 	if err := dec(in); err != nil {
@@ -378,6 +410,10 @@ var NameNode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _NameNode_Delete_Handler,
+		},
+		{
+			MethodName: "Register",
+			Handler:    _NameNode_Register_Handler,
 		},
 		{
 			MethodName: "HeartBeat",

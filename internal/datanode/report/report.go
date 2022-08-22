@@ -80,6 +80,29 @@ func (r *Report) FileReport(filekey string) error {
 	return nil
 }
 
+func (r *Report) Register() error {
+	conn, err := grpc.Dial(r.NamenodeAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithChainUnaryInterceptor(middleware.UnaryClientInterceptor(r.Addr)),
+	)
+	if err != nil {
+		return fmt.Errorf("connect to namenode[%s] failed: %w", r.NamenodeAddr, err)
+	}
+
+	defer conn.Close()
+
+	c := pb.NewNameNodeClient(conn)
+	req := &pb.RegisterRequset{}
+
+	_, err = c.Register(context.Background(), req)
+	if err != nil {
+		return fmt.Errorf("register failed: %w", err)
+	}
+
+	return nil
+}
+
+
 // Restart file reporting
 // tell namenode, datanode stored files.
 func (r *Report) RestartFileReport() error {

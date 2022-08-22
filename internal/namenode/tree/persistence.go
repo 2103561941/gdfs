@@ -8,7 +8,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/cyb0225/gdfs/internal/namenode/config"
 	"github.com/cyb0225/gdfs/pkg/log"
 )
 
@@ -48,16 +47,16 @@ func (p *Persistence) BackupTree(node *Node) error {
 	}
 
 	// copy tree success, then remove old tree file and old logging file. and change file name.
-	if err := os.Remove(config.Cfg.StoragePath + "tree.backup"); err != nil {
+	if err := os.Remove(p.storagePath + "tree.backup"); err != nil {
 		return fmt.Errorf("remove tree.backup failed: %w", err)
 	}
-	if err := os.Remove(config.Cfg.StoragePath + "tree.log"); err != nil {
+	if err := os.Remove(p.storagePath + "tree.log"); err != nil {
 		return fmt.Errorf("remove tree.log failed: %w", err)
 	}
-	if err := os.Rename(config.Cfg.StoragePath+"tree.backup.new", config.Cfg.StoragePath+"tree.backup"); err != nil {
+	if err := os.Rename(p.storagePath+"tree.backup.new", p.storagePath+"tree.backup"); err != nil {
 		return fmt.Errorf("rename tree.backup.new failed: %w", err)
 	}
-	if err := os.Rename(config.Cfg.StoragePath+"tree.log.new", config.Cfg.StoragePath+"tree.log"); err != nil {
+	if err := os.Rename(p.storagePath+"tree.log.new", p.storagePath+"tree.log"); err != nil {
 		return fmt.Errorf("rename tree.log.new failed: %w", err)
 	}
 
@@ -99,6 +98,16 @@ func (p *Persistence) ReadLog() error {
 	return nil
 }
 
+type scaner struct {
+	s *bufio.Scanner
+}
+
+// Used to deal with too many scan and text in read log functions.
+func (s *scaner) scan() string {
+	s.s.Scan()
+	return s.s.Text()
+}
+
 func (p *Persistence) Put(node *Node) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -111,36 +120,22 @@ func (p *Persistence) Put(node *Node) error {
 	// updatetime
 	// createtime
 	//
-	if _, err := p.fd.WriteString("put\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(node.FilePath + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(node.FileName + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(strconv.FormatInt(node.FileSize, 10) + "\n"); err != nil {
-		return err
-	}
-	keys := strings.Join(node.FileKeys, " ")
-	if _, err := p.fd.WriteString(keys + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(node.UpdateTime.String() + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(node.CreateTime.String() + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString("\n"); err != nil {
-		return err
-	}
+	w := bufio.NewWriter(p.fd)
 
-	return nil
+	w.WriteString("put\n")
+	w.WriteString(node.FilePath + "\n")
+	w.WriteString(node.FileName + "\n")
+	w.WriteString(strconv.FormatInt(node.FileSize, 10) + "\n")
+
+	keys := strings.Join(node.FileKeys, " ")
+	w.WriteString(keys + "\n")
+	w.WriteString(node.UpdateTime.String() + "\n")
+	w.WriteString(node.CreateTime.String() + "\n")
+	w.WriteString("\n")
+	return w.Flush()
 }
 
-func putRead(r *bufio.Scanner) {
+func (t *Tree) putRead(r *bufio.Scanner) {
 	r.Scan()
 	// filepath := r.Text()
 	// r.Scan()
@@ -155,8 +150,6 @@ func putRead(r *bufio.Scanner) {
 	// createtime := r.Text()
 	// r.Scan()
 
-	
-
 }
 
 func (p *Persistence) Delete(filepath string) error {
@@ -165,16 +158,12 @@ func (p *Persistence) Delete(filepath string) error {
 	// delete
 	// filepath
 	//
-	if _, err := p.fd.WriteString("delete\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(filepath + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString("\n"); err != nil {
-		return err
-	}
-	return nil
+	w := bufio.NewWriter(p.fd)
+	w.WriteString("delete\n")
+	w.WriteString(filepath + "\n")
+	w.WriteString("\n")
+
+	return w.Flush()
 }
 
 func deleteRead(r *bufio.Scanner, t *Tree) {
@@ -190,25 +179,14 @@ func (p *Persistence) Mkdir(node *Node) error {
 	// updatetime
 	// createtime
 	//
-	if _, err := p.fd.WriteString("mkdir\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(node.FilePath + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(node.FileName + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(node.UpdateTime.String() + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(node.CreateTime.String() + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString("\n"); err != nil {
-		return err
-	}
-	return nil
+	w := bufio.NewWriter(p.fd)
+	w.WriteString("mkdir\n")
+	w.WriteString(node.FilePath + "\n")
+	w.WriteString(node.FileName + "\n")
+	w.WriteString(node.UpdateTime.String() + "\n")
+	w.WriteString(node.UpdateTime.String() + "\n")
+	w.WriteString("\n")
+	return w.Flush()
 }
 
 func (p *Persistence) Rename(src string, dest string) error {
@@ -218,18 +196,10 @@ func (p *Persistence) Rename(src string, dest string) error {
 	// src
 	// dest
 	//
-
-	if _, err := p.fd.WriteString("rename\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(src + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString(dest + "\n"); err != nil {
-		return err
-	}
-	if _, err := p.fd.WriteString("\n"); err != nil {
-		return err
-	}
-	return nil
+	w := bufio.NewWriter(p.fd)
+	w.WriteString("rename\n")
+	w.WriteString(src + "\n")
+	w.WriteString(dest + "\n")
+	w.WriteString("\n")
+	return w.Flush()
 }

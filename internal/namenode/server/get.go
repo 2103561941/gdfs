@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cyb0225/gdfs/pkg/log"
 	pb "github.com/cyb0225/gdfs/proto/namenode"
 )
 
@@ -25,11 +26,17 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		}
 
 		// Get addressed of datanodes which stored this file(filekey).
-		backups, err := s.cache.Get(filekey)
-		if err != nil {
-			return nil, fmt.Errorf("get filekey's datanode failed: %w", err)
+		backups := s.cache.Get(filekey)
+		aliveBackups := []string{}
+		log.Debugf("backups is %+v", backups)
+		for j := 0; j < len(backups); j++ {
+			if ok := s.alive.IsAlive(backups[j]); ok {
+				aliveBackups = append(aliveBackups, backups[j])
+			}
 		}
-		chunk.Backups = backups
+		log.Debugf("aliveBackups is %+v", aliveBackups)
+
+		chunk.Backups = aliveBackups
 		chunks[i] = chunk
 	}
 

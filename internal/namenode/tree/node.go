@@ -14,8 +14,8 @@ const (
 )
 
 // tree Node
-// if file is directory, then the file keys is empty and filesize is zero.
-// on the other hand, if file is normal file, than the children is empty.
+// If file is directory, then the file keys is empty and filesize is zero.
+// On the other hand, if file is normal file, than the children is empty.
 type Node struct {
 	FileName   string
 	FileType   int    // directory or normal file
@@ -28,8 +28,6 @@ type Node struct {
 	Children []*Node
 }
 
-// in my use, i found that, if I use create the file by struct, I always forget to make a slice,
-// so I chooose to use the function to init, and use options to fill this node.
 func NewNode(opts ...Option) *Node {
 	node := &Node{
 		FileSize:   0,
@@ -48,7 +46,6 @@ func NewNode(opts ...Option) *Node {
 
 type Option func(node *Node)
 
-// if I pass true, then it will fill Directory to this node. on the other hand, it will fill NormalFile.
 func IsDirectory(isDirectory bool) Option {
 	return func(node *Node) {
 		if isDirectory {
@@ -77,13 +74,12 @@ func SetFileSize(filesize int64) Option {
 	}
 }
 
+
 func (n *Node) IsDirectory() bool {
 	return n.FileType == Direcotry
 }
 
-// do some checks before append child file.
-// here, I not check the filepath, it will check by tree Put funciton.
-// because, the file's relation belongs to the tree, not a node.
+// Do some checks before append child file.
 func (n *Node) AppendChild(node *Node) error {
 	if n.FileType != Direcotry {
 		return fmt.Errorf("file: %s is not a directory", n.FilePath)
@@ -100,7 +96,7 @@ func (n *Node) AppendChild(node *Node) error {
 	return nil
 }
 
-// depends on the size of file stored in node.
+// File chunk.
 func (n *Node) CreateFileKeys(chunkSize int64) error {
 	if n.FileType != NormalFile {
 		return fmt.Errorf("file: %s is a directory", n.FilePath)

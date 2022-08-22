@@ -1,9 +1,9 @@
 Log:
-  Module: release  #it can input debug, info(release)
+  Module: debug  #it can input debug, info(release)
   LogPath: ./storage/log/client/
   MaxSize:   1  #MB
   MaxBackups: 3
   MaxAge: 3  #day
 
 NamenodeAddr: 127.0.0.1:50051
-ChunkSize:  1048576 # #1024*1024, 1MB, file chunk
+ChunkSize:  1048576 # 1MB per file block size

@@ -33,7 +33,7 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 	chunks := make([]*pb.Chunk, len(node.FileKeys))
 	// search datanode to store backups
 	for i := 0; i < len(node.FileKeys); i++ {
-		addrs, err := s.cache.LoadBalance(s.backups)
+		addrs, err := s.alive.LoadBalance(s.backups)
 		// Put file error
 		// There are not enough datanode to store this file.
 		// Then delete node in file tree.
@@ -53,7 +53,5 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 
 	_ = s.tree.Per.Put(node)
 	res := &pb.PutResponse{Chunks: chunks}
-	log.Debug("put datanodes' address success")
-
 	return res, nil
 }

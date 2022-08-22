@@ -29,19 +29,15 @@ func (s *Server) Delete(ctx context.Context, req *pb1.DeleteRequest) (*pb1.Delet
 	// Delte filekey in cache. 
 	// At the same time, get addresses of datanodes, and send delete msg to them. 
 	for i := 0; i < len(filekeys); i++ {
-		backups, err := s.cache.Delete(filekeys[i])
-		if err != nil {
-			// Here I choose to log this error but not to stop.
-			// And continue to delete the remaining filekeys in datanodes.
-			log.Error("failed to get delete backups of filekey", log.String("filekey", filekeys[i]), log.Err(err))
-			continue
-		}
+		backups := s.cache.Get(filekeys[i])
 		for j := 0; j < len(backups); j++ {
-			sendDeleteMsg(backups[j], filekeys[i])
+			// Check if the datanode is alived.
+			if ok := s.alive.IsAlive(backups[i]); ok {
+				sendDeleteMsg(backups[j], filekeys[i])
+			}
 		}
 	}
 
-	// do a log.
 	_ = s.tree.Per.Delete(filepath)
 	log.Info("delete file success", log.String("file", filepath))
 	res := &pb1.DeleteResponse{}

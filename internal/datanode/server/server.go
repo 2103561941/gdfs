@@ -79,7 +79,12 @@ func RunServer(cfg *ServerConfig) error {
 		}
 	}()
 
-	// restart file report
+	// Register to namenode.
+	if err := datanodeServer.report.Register(); err != nil {
+		return err
+	}
+
+	// Restart file report.
 	if err := datanodeServer.report.RestartFileReport(); err != nil {
 		return err
 	}

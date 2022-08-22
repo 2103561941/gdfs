@@ -11,6 +11,7 @@ service NameNode {
     rpc List(ListRequest)returns(ListResponse){}
     rpc Delete(DeleteRequest)returns(DeleteResponse){}
 
+    rpc Register(RegisterRequset)returns(RegisterResponse){}
     rpc HeartBeat(HeartBeatRequset)returns(HeartBeatResponse){}
     rpc FileReport(FileReportRequest)returns(FileReportResponse){}
 }
@@ -70,6 +71,10 @@ message DeleteRequest {
 }
 
 message DeleteResponse {}
+
+message RegisterRequset {}
+
+message RegisterResponse {}
 
 message HeartBeatRequset {}
 

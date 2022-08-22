@@ -342,42 +342,10 @@ func search(patterns []string, node *Node, height int) *Node {
 	return nil
 }
 
-// this function is use to create directories recursively.
-func mkdir(patterns []string, node *Node, height int) *Node {
-	if patterns[height] != node.FileName {
-		return nil
-	}
 
-	if height == len(patterns)-1 {
-		return node
-	}
-
-	// Notice!
-	// height must be add at the out of for-loop.
-	height++
-	for i := 0; i < len(node.Children); i++ {
-		ans := mkdir(patterns, node.Children[i], height)
-		if ans != nil {
-			return ans
-		}
-	}
-	// here is the difference with search
-	// it chooses to make a directory, instead of return nil
-
-	// Notice!
-	// patterns[height] is the children of node, and we need to make a
-	dir := NewNode(
-		SetFileName(patterns[height]),
-		IsDirectory(true),
-	)
-
-	node.Children = append(node.Children, dir)
-	return mkdir(patterns, dir, height)
-}
-
-// split the file path to a string slice
-// the first "/" stands for the root dir, so it need to be add.
-// the check of filepath is placed on the gdfs client
+// Split the file path to a string slice
+// The first "/" stands for the root dir, so it need to be add.
+// The check of filepath is placed on the gdfs client
 func split(filepath string) []string {
 	if len(filepath) == 0 {
 		return []string{}
@@ -395,6 +363,7 @@ func split(filepath string) []string {
 	return patterns
 }
 
+// For example, '/root//t' is a invailed filename. 
 func checkFilename(patterns []string) error {
 	if len(patterns) == 0 {
 		return fmt.Errorf("invaild file name")
@@ -413,8 +382,8 @@ func checkFilename(patterns []string) error {
 	return nil
 }
 
-// check this file can have a dir or not.
-// but not check the dir exist or not.
+// Check if this file is root. For example, its filepath is '/' or 'abc'.
+// But not check the dir exist or not.
 func checkHaveDir(patterns []string) error {
 	// if patterns < 2, then the file can not find the parentDir
 	if len(patterns) <= 1 {
