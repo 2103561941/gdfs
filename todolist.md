@@ -22,7 +22,7 @@
 
 13. 美化client的返回信息，而不是统一返回log信息。 ok 
 
-1. namenode 目录树备份，
+1. namenode 目录树备份 基本ok
 
 5. datanode 负载均衡
 
