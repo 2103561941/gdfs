@@ -72,11 +72,15 @@ message DeleteRequest {
 
 message DeleteResponse {}
 
-message RegisterRequset {}
+message RegisterRequset {
+    
+}
 
 message RegisterResponse {}
 
-message HeartBeatRequset {}
+message HeartBeatRequset {
+    int64 cap = 1;
+}
 
 message HeartBeatResponse {}
 

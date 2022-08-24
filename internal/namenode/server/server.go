@@ -30,16 +30,16 @@ type Server struct {
 	// Stored the status of a datanode.
 	alive *alive.Alive
 
-	backups int // defautl file backups
+	backups   int   // defautl file backups
 	chunkSize int64 // file size per file block
 }
 
 type ServerConfig struct {
-	Port string
-	Backups int 
-	ChunkSize int64
-	StoragePath string 
-	Expired int
+	Port        string
+	Backups     int
+	ChunkSize   int64
+	StoragePath string
+	Expired     int
 }
 
 func newServer(cfg *ServerConfig) (*Server, error) {
@@ -51,11 +51,11 @@ func newServer(cfg *ServerConfig) (*Server, error) {
 	cache := cache.NewCache()
 	alive := alive.NewAlive(cfg.Expired)
 	server := &Server{
-		tree:  tree,
-		cache: cache,
-		alive: alive,
+		tree:      tree,
+		cache:     cache,
+		alive:     alive,
 		chunkSize: cfg.ChunkSize,
-		backups: cfg.Backups,
+		backups:   cfg.Backups,
 	}
 
 	return server, nil
@@ -64,7 +64,7 @@ func newServer(cfg *ServerConfig) (*Server, error) {
 // Start rpc server.
 // Add some middlewares. Such as recovery, interceptor log.
 func RunServer(cfg *ServerConfig) error {
-	lis, err := net.Listen("tcp", ":"+ cfg.Port)
+	lis, err := net.Listen("tcp", ":"+cfg.Port)
 	if err != nil {
 		return err
 	}
@@ -77,14 +77,14 @@ func RunServer(cfg *ServerConfig) error {
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
-				// middleware.UneryRecovery(),
+				middleware.UneryRecovery(),
 				grpc_ctxtags.UnaryServerInterceptor(),
-				middleware.UnaryServerInterceptor([]string{"HeartBeat"}),
+				middleware.UnaryServerInterceptor([]string{"HeartBeat", "FileReport"}),
 			),
 		),
 		grpc.StreamInterceptor(
 			grpc_middleware.ChainStreamServer(
-				// middleware.StreamRecovery(),
+				middleware.StreamRecovery(),
 				grpc_ctxtags.StreamServerInterceptor(),
 				middleware.StreamServerInterceptor(nil),
 			)),

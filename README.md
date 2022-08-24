@@ -14,6 +14,8 @@ golang分布式文件存储系统
 
 - datanode 支持多机分布解决单点故障。
 - 文件上传采用传递方式（client 上传到 datanode 一旦成功，剩下备份的部分又datanode 继续进行。）
+- namenode 目录树支持记录日志文件进行持久化操作，namenode重启支持目录树文件读取。
+- 可以根据 datanode 所用容量进行负责均衡。
 
 ## 快速开始
 

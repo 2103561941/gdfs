@@ -1,78 +1,113 @@
 package alive
 
 import (
-	"fmt"
+	"container/list"
 	"time"
 )
 
 // Update datanode time. (keep alive)
-func (a *Alive) Update(key string) {
+// If datanode is not register before, then create it in list and map.
+func (a *Alive) Update(addr string, cap int64) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	v, ok := a.mp[key]
+	v, ok := a.mp[addr]
 	// The datanode haven't register before.
+	// register in map and list.
 	if !ok {
-		val := &datanodeInfo{
+		val := &entry{
+			addr:       addr,
 			updateTime: time.Now(),
+			cap:        cap,
 		}
-		a.mp[key] = val
+
+		// Traverse the list to find suitable index to stored this element.
+		// List is sorted by cap from small to large.
+		var ele *list.Element
+		for ele = a.ll.Front(); ele != nil; ele = ele.Next() {
+			entry := ele.Value.(*entry)
+			if entry.cap > val.cap {
+				ele = a.ll.InsertBefore(val, ele)
+				break
+			}
+		}
+
+		if ele == nil {
+			ele = a.ll.PushBack(val)
+		}
+
+		a.mp[addr] = ele
+		return
 	}
-	if v == nil {
-		v = &datanodeInfo{}
+
+	val := v.Value.(*entry)
+	val.updateTime = time.Now()
+	if val.cap == cap {
+		return
 	}
-	v.updateTime = time.Now()
+	val.cap = cap
+
+	// Resort by move element to another location.
+	var e *list.Element
+	for e = a.ll.Front(); e != nil; e = e.Next() {
+		ele := e.Value.(*entry)
+		if ele.cap > val.cap {
+			a.ll.MoveBefore(v, e)
+			return
+		}
+	}
+	// Move to the back
+	a.ll.MoveToBack(v)
+
 }
 
 // Check if datanode is alived.
-func (a *Alive) IsAlive(key string) bool {
+func (a *Alive) IsAlive(addr string) bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	val, ok := a.mp[key]
+	e, ok := a.mp[addr]
 	// datanode haven't register
 	if !ok {
 		return false
 	}
 
+	val := e.Value.(*entry)
 	expireTime := time.Since(val.updateTime)
 	// Datanode is expired.
 	// Then delete it.
 	if expireTime >= a.expired {
-		delete(a.mp, key)
+		delete(a.mp, addr)
+		a.ll.Remove(e)
 		return false
 	}
 	return true
 }
 
-// loadBalance algorithm.
-// Simple traversal of the map to achieve load balancing.
-func (a *Alive) LoadBalance(backups int) ([]string, error) {
-	length := len(a.mp)
-
-	if length == 0 {
-		return nil, fmt.Errorf("There is no alived datanode")
-	}
-
-	str := make([]string, 0)
-
-	if backups > length {
-		backups = length
-	}
-
+// LoadBalance: sorted by the capacity of datanode.
+// Perfer datanodes with small cap and addresses of returns are unique.
+// Input how many datanode should be returned. But it also depends on how many alived datanodes I have.
+// Return a serious of datanode to stroed related file.
+func (a *Alive) LoadBalance(n int) ([]string, error) {
+	backups := []string{}
 	i := 0
-	for k := range a.mp {
-		if i >= backups {
+	for ele := a.ll.Front(); ele != nil; ele = ele.Next() {
+		i++
+		if i > n {
 			break
 		}
-		if ok := a.IsAlive(k); ok {
-			str = append(str, k)
-			i++
+		val := ele.Value.(*entry)
+		expireTime := time.Since(val.updateTime)
+		// Datanode is expired.
+		// Then delete it.
+		if expireTime >= a.expired {
+			delete(a.mp, val.addr)
+			a.ll.Remove(ele)
+			continue
 		}
+
+		backups = append(backups, val.addr)
 	}
 
-	if len(str) == 0 {
-		return nil, fmt.Errorf("datanode are all died")
-	}
-	return str, nil
+	return backups, nil
 }

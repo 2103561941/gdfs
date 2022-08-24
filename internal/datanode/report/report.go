@@ -46,7 +46,25 @@ func (r *Report) heartbeat() error {
 	defer conn.Close()
 
 	c := pb.NewNameNodeClient(conn)
-	if _, err := c.HeartBeat(context.Background(), &pb.HeartBeatRequset{}); err != nil {
+
+	dir, err := os.ReadDir(r.StoragePath)
+	if err != nil {
+		return fmt.Errorf("open directory failed: %w", err)
+	}
+
+	cap := int64(0)
+	for _, file := range dir {
+		info, err := file.Info()
+		if err != nil {
+			return fmt.Errorf("get file%s info failed: %w", file.Name(), err)
+		}
+		cap += info.Size()
+	}
+
+	req := &pb.HeartBeatRequset{
+		Cap: cap,
+	}
+	if _, err := c.HeartBeat(context.Background(), req); err != nil {
 		return fmt.Errorf("get namenode' heartbeat failed: %w", err)
 	}
 
@@ -80,6 +98,25 @@ func (r *Report) FileReport(filekey string) error {
 	return nil
 }
 
+// Restart file reporting
+// tell namenode, datanode stored files.
+func (r *Report) RestartFileReport() error {
+	fileInfos, err := os.ReadDir(r.StoragePath)
+	if err != nil {
+		return fmt.Errorf("open directory failed: %w", err)
+	}
+
+	for _, file := range fileInfos {
+		if err := r.FileReport(file.Name()); err != nil {
+			return err
+		}
+	}
+
+	log.Info("restart file report success")
+
+	return nil
+}
+
 func (r *Report) Register() error {
 	conn, err := grpc.Dial(r.NamenodeAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -98,26 +135,6 @@ func (r *Report) Register() error {
 	if err != nil {
 		return fmt.Errorf("register failed: %w", err)
 	}
-
-	return nil
-}
-
-
-// Restart file reporting
-// tell namenode, datanode stored files.
-func (r *Report) RestartFileReport() error {
-	fileInfos, err := os.ReadDir(r.StoragePath)
-	if err != nil {
-		return fmt.Errorf("open directory failed: %w", err)
-	}
-
-	for _, file := range fileInfos {
-		if err := r.FileReport(file.Name()); err != nil {
-			return err
-		}
-	}
-
-	log.Info("restart file report success")
 
 	return nil
 }

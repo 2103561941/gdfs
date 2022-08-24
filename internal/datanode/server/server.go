@@ -59,12 +59,12 @@ func RunServer(cfg *ServerConfig) error {
 
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-			middleware.UneryRecovery(),
+			// middleware.UneryRecovery(),
 			grpc_ctxtags.UnaryServerInterceptor(),
 			middleware.UnaryServerInterceptor(nil),
 		)),
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
-			middleware.StreamRecovery(),
+			// middleware.StreamRecovery(),
 			grpc_ctxtags.StreamServerInterceptor(),
 			middleware.StreamServerInterceptor(nil),
 		)),
@@ -80,9 +80,9 @@ func RunServer(cfg *ServerConfig) error {
 	}()
 
 	// Register to namenode.
-	if err := datanodeServer.report.Register(); err != nil {
-		return err
-	}
+	// if err := datanodeServer.report.Register(); err != nil {
+	// 	return err
+	// }
 
 	// Restart file report.
 	if err := datanodeServer.report.RestartFileReport(); err != nil {

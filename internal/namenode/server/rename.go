@@ -18,7 +18,9 @@ func (s *Server) Rename(ctx context.Context, req *pb.RenameRequest) (*pb.RenameR
 		return nil, fmt.Errorf("rename file failed: %w", err)
 	}
 
-	_ = s.tree.Per.Rename(src, dest)
+	if err := s.tree.Per.Rename(src, dest); err != nil {
+		log.Error("write file tree log failed", log.String("method", "rename"), log.Err(err))
+	}
 	res := &pb.RenameResponse{}
 	return res, nil 
 }

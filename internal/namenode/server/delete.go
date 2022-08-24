@@ -38,7 +38,9 @@ func (s *Server) Delete(ctx context.Context, req *pb1.DeleteRequest) (*pb1.Delet
 		}
 	}
 
-	_ = s.tree.Per.Delete(filepath)
+	if err := s.tree.Per.Delete(filepath); err != nil {
+		log.Error("write file tree log failed", log.String("method", "delete"), log.Err(err))
+	}
 	log.Info("delete file success", log.String("file", filepath))
 	res := &pb1.DeleteResponse{}
 	return res, nil

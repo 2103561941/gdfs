@@ -12,7 +12,8 @@ import (
 // Make sure datanode is alive.
 func (s *Server) HeartBeat(ctx context.Context, req *pb.HeartBeatRequset) (*pb.HeartBeatResponse, error) {
 	address := ctx.Value("address").(string)
-	s.alive.Update(address)
+	// log.Debug("heartbeat", log.String("datanode", address), log.Int64("capacity", req.Cap))
+	s.alive.Update(address, req.Cap)
 	res := &pb.HeartBeatResponse{}
 	return res, nil
 }

@@ -51,7 +51,9 @@ func (s *Server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 		chunks[i] = chunk
 	}
 
-	_ = s.tree.Per.Put(node)
+	if err := s.tree.Per.Put(node); err != nil {
+		log.Error("write file tree log failed", log.String("method", "put"), log.Err(err))
+	}
 	res := &pb.PutResponse{Chunks: chunks}
 	return res, nil
 }

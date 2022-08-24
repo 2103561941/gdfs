@@ -13,21 +13,25 @@ import (
 // Check is datanode alived.
 // Give suitable addresses of datanodes to stored new filekeys.
 type Alive struct {
-	mu      sync.Mutex
-	mp      map[string]*datanodeInfo
+	mu sync.Mutex
+	mp map[string]*list.Element
 
-	alive   list.List  // Used to loadbalance.
+	// Used to loadbalance.
+	// Stored the sort of a datanodes' capcity.
+	ll      *list.List
 	expired time.Duration // heartbeat timeout.
 }
 
-type datanodeInfo struct {
+type entry struct {
+	addr string
 	updateTime time.Time
+	cap int64 // the capacity of the datanode. 
 }
-
 
 func NewAlive(expired int) *Alive {
 	return &Alive{
-		mp:      make(map[string]*datanodeInfo),
+		mp:      make(map[string]*list.Element),
 		expired: time.Duration(expired) * time.Second,
+		ll:      list.New(),
 	}
 }
